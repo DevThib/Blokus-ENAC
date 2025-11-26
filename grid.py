@@ -3,23 +3,19 @@ from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHB
 import sys
 from PyQt5.QtCore import Qt
 
-
 class Grid:
 
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        app = QApplication(sys.argv)
         self.mat = np.zeros((width, height))
+        self.buttons = [[] for _ in range(height)]
         self.grid = self.build_grid()
-
-        app.exec()
 
     def build_grid(self):
         container = QWidget()
         vbox = QVBoxLayout()
         container.setLayout(vbox)
-
         def p():
             print("test")
 
@@ -35,19 +31,26 @@ class Grid:
                                background-color: grey;
                                border:5px;
                                border-color:black;
-                               transition: background-color 10s;
                            }
                            QPushButton:hover{
                             background-color: white;
                            }
                                   """)
                 hbox.addWidget(b)
+                self.buttons[i].append(b)
             vbox.addLayout(hbox)
-        container.show()
         return container
-
     def add_piece(self, piece, pos):
-        pass
+        for t in piece:
+            self.mat[pos[0]+t[0],pos[1]+t[1]] = 1
+            b = self.buttons[pos[0]+t[0]][pos[1]+t[1]]
+            b.setCursor(Qt.CursorShape.ArrowCursor)
+            b.setStyleSheet("""
+                                                                                           QPushButton {
+                                                                                               background-color: blue;
+                                                                                               border:5px;
+                                                                                               border-color:black;
+                                                                                           }
+                                                                                                  """)
 
 
-g = Grid(10, 10)

@@ -1,78 +1,122 @@
 from grid import Grid
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout,QLabel,QGraphicsRectItem
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout,QLabel,QGridLayout,QMainWindow
+from PyQt5.QtGui import QFont
 import sys
-from PyQt5.QtCore import Qt
+import main as m
+from PyQt5.QtCore import Qt,pyqtSignal
 
 class Game:
     def __init__(self):
         self.app = QApplication(sys.argv)
-        self.gridPlayer1 = Grid(14,14)
-        self.gridPlayer2 = Grid(14, 14)
+        self.main_window = QMainWindow()
+        #self.gridPlayer1 = Grid(14,14)
+        #self.gridPlayer2 = Grid(14, 14)
         self.gridGraphics = Grid(14, 14)
+        self.selectedPiece = m.piece_1
+
+        self.main_window.setStyleSheet("background-color:yellow;")
 
         container = QWidget()
         mainHbox = QHBoxLayout()
         rightVBox = QVBoxLayout()
-        piecesVBox = QVBoxLayout()
+        piecesGrid = QGridLayout()
 
         container.setLayout(mainHbox)
 
-        player_label = QLabel("Jean marie le pen")
+        player_label = QLabel("Joueur 1")
+        player_label.setFixedSize(500,240)
         player_label.setStyleSheet("""
                             QLabel{
-                                font : Trebuchet MS;
-                                color : pink;
+                                color : red;
                                 font-weight:bold;
                             }
         
                                     """)
-        rightVBox.addWidget(player_label)
-        rightVBox.addLayout(piecesVBox)
+        player_label.setFont(QFont('Comic Sans MS', 60))
+        player_label.setAlignment(Qt.AlignCenter)
 
-        for i in range(10):
-            piecesVBox.addLayout(self.get_graphic_piece(((0, 0), (0, 1))))
+        rightVBox.addWidget(player_label)
+        rightVBox.addLayout(piecesGrid)
+
+
+
+        i,j = 0,0
+        for piece in m.pieces:
+            piecesGrid.addWidget(self.get_graphic_piece(piece[1]),i,j)
+            j += 1
+            if j ==5:
+                i += 1
+                j = 0
+
+        piecesGrid.setSpacing(0)
+
 
         mainHbox.addWidget(self.gridGraphics.grid)
         mainHbox.addLayout(rightVBox)
+
+        container.setStyleSheet("background-color:rgb(210,210,210);")
+
         container.show()
 
         self.app.exec()
 
     def get_graphic_piece(self,piece):
-        vbox = QVBoxLayout()
+        pieceWidget = QWidget()
+        pieceLayout = QGridLayout()
         list = [(4-t[0],t[1]) for t in piece]
+        rects = []
+
+        def click():
+            for i in range(5):
+                for a in range(5):
+                    if (i, a) in list:
+                        rects[i*5+a].setStyleSheet("""
+                                                           QPushButton{
+                                                               background-color:red;
+                                                               border: 1px solid rgb(200,0,0);
+                                                           }
+                                        """)
+                    else:
+                        rects[i*5+a].setStyleSheet("""
+                                                           QPushButton{
+                                                               background-color:transparent;
+                                                           }
+                                        """)
+            self.selectedPiece = self.search_piece(piece)
+            print(self.selectedPiece)
         for i in range(5):
-            hbox = QHBoxLayout()
             for a in range(5):
-                rect = QLabel()
-                rect.setFixedSize(10,10)
+                rect = QPushButton()
+                rect.setFixedSize(15,15)
                 if (i,a) in list:
                     rect.setStyleSheet("""
-                                                   QLabel{
-                                                       border:1px;
-                                                       border_color:black;
-                                                       background-color:pink;
-                                                       padding:0px;
-                                                       margin:0px;
+                                                   QPushButton{
+                                                       border: 1px solid rgb(0,0,200);
+                                                       background-color:blue;
                                                    }
                                    """)
                 else:
                     rect.setStyleSheet("""
-                                                   QLabel{
-                                                       background-color:black;
-                                                       padding:0px;
-                                                        margin:0px;
+                                                   QPushButton{
+                                                       background-color:transparent;
                                                    }
                                    """)
-                hbox.addWidget(rect)
-            hbox.setSpacing(0)
-            hbox.setContentsMargins(0, 0, 0, 0)
-            vbox.addLayout(hbox)
-        vbox.setSpacing(0)
-        vbox.setContentsMargins(0, 0, 0, 0)
+                pieceLayout.addWidget(rect,i,a)
+                pieceWidget.setLayout(pieceLayout)
+                rects.append(rect)
 
-        return vbox
+        pieceWidget.setContentsMargins(0,0,0,0)
+        pieceWidget.mousePressEvent = lambda event: click()
+
+        pieceLayout.setSpacing(0)
+
+        return pieceWidget
+
+    def search_piece(self,piece):
+        for p in m.pieces:
+            if piece in p.values():
+                return p
 
 g = Game()
 

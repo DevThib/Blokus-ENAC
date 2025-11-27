@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout,QGridLayout
 import sys
 from PyQt5.QtCore import Qt
 
@@ -14,13 +14,14 @@ class Grid:
 
     def build_grid(self):
         container = QWidget()
-        vbox = QVBoxLayout()
-        container.setLayout(vbox)
+        gridLayout = QGridLayout()
+        container.setLayout(gridLayout)
+
+        gridLayout.setSpacing(0)
         def p():
             print("test")
 
         for i in range(self.height):
-            hbox = QHBoxLayout()
             for a in range(self.width):
                 b = QPushButton()
                 b.clicked.connect(p)
@@ -28,27 +29,25 @@ class Grid:
                 b.setCursor(Qt.CursorShape.PointingHandCursor)
                 b.setStyleSheet("""
                            QPushButton {
-                               background-color: grey;
-                               border:5px;
-                               border-color:black;
+                               background-color: rgb(150,150,150);
+                               border:2.5px solid rgb(100,100,100);
                            }
                            QPushButton:hover{
-                            background-color: white;
+                            background-color: rgb(120,120,120);
                            }
                                   """)
-                hbox.addWidget(b)
+                gridLayout.addWidget(b,i,a)
                 self.buttons[i].append(b)
-            vbox.addLayout(hbox)
         return container
-    def add_piece(self, piece, pos):
+    def add_piece(self, piece, pos,player):
         for t in piece:
-            self.mat[pos[0]+t[0],pos[1]+t[1]] = 1
+            self.mat[pos[0]+t[0],pos[1]+t[1]] = player
             b = self.buttons[pos[0]+t[0]][pos[1]+t[1]]
             b.setCursor(Qt.CursorShape.ArrowCursor)
             b.setStyleSheet("""
                                                                                            QPushButton {
                                                                                                background-color: blue;
-                                                                                               border:5px;
+                                                                                               border:5px solid;
                                                                                                border-color:black;
                                                                                            }
                                                                                                   """)

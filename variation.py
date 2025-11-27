@@ -1,6 +1,7 @@
 import main
 import matplotlib.pyplot as plt
 import numpy as np
+
 def voisins(version):
     s=set()
     for e in version:
@@ -55,15 +56,64 @@ def numeros(version):
     for e in j:
         a,b=e
         if (a-1,b-1) in version:
-            g=(a,b,10)
+            g=(a,b,10,1)
         if (a-1,b+1) in version:
-            g=(a,b,11)
+            g=(a,b,11,1)
         if (a+1,b+1) in version:
-            g=(a,b,12)
+            g=(a,b,12,1)
         if (a+1,b-1) in version:
-            g=(a,b,13)
+            g=(a,b,13,1)
         c.add(g)
     return c
+    '''elif joueur==j2:
+        j=jouable(version)
+        c=set()
+        for e in j:
+            a,b=e
+            if (a-1,b-1) in version:
+                g=(a,b,10,2)
+            if (a-1,b+1) in version:
+                g=(a,b,11,2)
+            if (a+1,b+1) in version:
+                g=(a,b,12,2)
+            if (a+1,b-1) in version:
+                g=(a,b,13,2)
+            c.add(g)
+        return c'''
+dessin(numeros(main.piece_15[2]))
 
+def jeu(mat,version):
+    l=numeros(version)
+    s=set()
+    for d in mat:
+        for e in d:
+            if e[3]==1:
+                if e[2]==10:
+                    for i in l:
+                        if i[2]==12:
+                            # test si on peut poser la pièce
+                            s.add(((i[0]+1,i[1]+1),(e[0],e[1])))
+                elif e[2]==11:
+                    for i in l:
+                        if i[2]==13:
+                            s.add(((i[0]+1,i[1]-1),(e[0],e[1])))
+                elif e[2]==12:
+                    for i in l:
+                        if i[2]==10:
+                            s.add(((i[0]-1,i[1]-1),(e[0],e[1])))
+                elif e[2]==13:
+                    for i in l:
+                        if i[2]==11:
+                            s.add(((i[0]-1,i[1]+1),(e[0],e[1])))
+    return s
+    
 
-print(numeros(main.piece_1[1]))
+m=np.zeros((24,24),dtype='i,i,i,i')
+for i in range(24):
+    for j in range(24):
+        m[i][j]=(i-5,j-5,0,0)
+
+m[15][15]=(10,10,12,1)
+
+print(jeu(m,main.piece_4[1]))
+    

@@ -7,21 +7,21 @@ def voisins(version):
     for e in version:
         a,b=e
         if (a,b-1) not in version:
-            s.add((a,b-1)) 
+            s.add((a,b-1))
         if (a,b+1) not in version:
             s.add((a,b+1))
         if (a-1,b) not in version:
-            s.add((a-1,b)) 
+            s.add((a-1,b))
         if (a+1,b) not in version:
             s.add((a+1,b))
         if (a-1,b-1) not in version:
-            s.add((a-1,b-1)) 
+            s.add((a-1,b-1))
         if (a-1,b+1) not in version:
-            s.add((a-1,b+1)) 
+            s.add((a-1,b+1))
         if (a+1,b-1) not in version:
-            s.add((a+1,b-1)) 
+            s.add((a+1,b-1))
         if (a+1,b+1) not in version:
-             s.add((a+1,b+1)) 
+             s.add((a+1,b+1))
     return s
 
 def dessin(piece):
@@ -31,7 +31,7 @@ def dessin(piece):
     ax.hist2d(x,y,bins=(np.arange(-2, 7, 1), np.arange(-2, 7, 1)))
     plt.show()
 
-    
+
 def jouable(version):
     l=voisins(version)
     c=[]
@@ -56,64 +56,84 @@ def numeros(version):
     for e in j:
         a,b=e
         if (a-1,b-1) in version:
-            g=(a,b,10,1)
+            g=(a,b,10)
         if (a-1,b+1) in version:
-            g=(a,b,11,1)
+            g=(a,b,11)
         if (a+1,b+1) in version:
-            g=(a,b,12,1)
+            g=(a,b,12)
         if (a+1,b-1) in version:
-            g=(a,b,13,1)
+            g=(a,b,13)
         c.add(g)
     return c
-    '''elif joueur==j2:
-        j=jouable(version)
-        c=set()
-        for e in j:
-            a,b=e
-            if (a-1,b-1) in version:
-                g=(a,b,10,2)
-            if (a-1,b+1) in version:
-                g=(a,b,11,2)
-            if (a+1,b+1) in version:
-                g=(a,b,12,2)
-            if (a+1,b-1) in version:
-                g=(a,b,13,2)
-            c.add(g)
-        return c'''
-dessin(numeros(main.piece_15[2]))
+
+
+def decalage(version,case):
+    a,b=case
+    for e in version:
+        c,d=e
+        c=c-a
+        d=d-b
+        e=(c,d)
+
+
+
 
 def jeu(mat,version):
     l=numeros(version)
     s=set()
-    for d in mat:
-        for e in d:
-            if e[3]==1:
-                if e[2]==10:
-                    for i in l:
-                        if i[2]==12:
-                            # test si on peut poser la pièce
-                            s.add(((i[0]+1,i[1]+1),(e[0],e[1])))
-                elif e[2]==11:
-                    for i in l:
-                        if i[2]==13:
-                            s.add(((i[0]+1,i[1]-1),(e[0],e[1])))
-                elif e[2]==12:
-                    for i in l:
-                        if i[2]==10:
-                            s.add(((i[0]-1,i[1]-1),(e[0],e[1])))
-                elif e[2]==13:
-                    for i in l:
-                        if i[2]==11:
-                            s.add(((i[0]-1,i[1]+1),(e[0],e[1])))
+    for f in range(len(mat)):
+        for g in range(len(mat[0])):
+            if mat[f][g]==10:
+                for i in l:
+                    if i[2]==12:
+                        decalage(version,(i[0]+1,i[1]+1))
+                        i=(f-1,g-1)
+                        for k in version:
+                            k=(k[0]+i[0]+1,k[1]+i[1]+1)
+                            y=0
+                            if mat[k[0]][k[1]] == -1:
+                                y=1
+                        if y==0:
+                            s.add((f,g))
+            elif mat[f][g]==11:
+                for i in l:
+                    if i[2]==13:
+                        decalage(version,(i[0]+1,i[1]-1))
+                        i=(f-1,g+1)
+                        for k in version:
+                            k=(k[0]+i[0]+1,k[1]+i[1]-1)
+                            y=0
+                            if mat[k[0]][k[1]] == -1:
+                                y=1
+                        if y==0:
+                            s.add((f,g))
+            elif mat[f][g]==12:
+                for i in l:
+                    if i[2]==10:
+                        decalage(version,(i[0]-1,i[1]-1))
+                        i=(f+1,g+1)
+                        for k in version:
+                            k=(k[0]+i[0]-1,k[1]+i[1]-1)
+                            y=0
+                            if mat[k[0]][k[1]] == -1:
+                                y=1
+                        if y==0:
+                            s.add((f,g))
+            elif mat[f][g]==13:
+                for i in l:
+                    if i[2]==11:
+                        decalage(version,(i[0]-1,i[1]+1))
+                        i=(f+1,g-1)
+                        for k in version:
+                            k=(k[0]+i[0]-1,k[1]+i[1]+1)
+                            y=0
+                            if mat[k[0]][k[1]] == -1:
+                                y=1
+                        if y==0:
+                            s.add((f,g))
     return s
-    
 
-m=np.zeros((24,24),dtype='i,i,i,i')
-for i in range(24):
-    for j in range(24):
-        m[i][j]=(i-5,j-5,0,0)
 
-m[15][15]=(10,10,12,1)
-
-print(jeu(m,main.piece_4[1]))
-    
+mat1=[[0,0,0,0,0,0],[0,0,11,-1,10,0],[0,11,-1,-1,-1,0],[0,-1,-1,-1,-1,0],[0,12,-1,-1,13,0],[0,0,0,0,0,0]]
+piece_2={1:((0,0),(0,1)),2:((0,0),(1,0))}
+print(jeu(mat1,piece_2[1]))

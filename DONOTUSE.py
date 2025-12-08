@@ -6,93 +6,71 @@ import sys
 import main as m
 from PyQt5.QtCore import Qt,pyqtSignal
 
-class GameGraphics(QMainWindow):
-    def __init__(self,game):
-        super().__init__()
-        self.game = game
+class Game:
+    def __init__(self):
+        self.app = QApplication(sys.argv)
+        self.main_window = QMainWindow()
 
-        # self.gridPlayer1 = Grid(14,14)
-        # self.gridPlayer2 = Grid(14, 14)
-        self.gridGraphics = Grid(14, 14,game)
+        #self.gridPlayer1 = Grid(14,14)
+        #self.gridPlayer2 = Grid(14, 14)
+        self.gridGraphics = Grid(14, 14)
+        self.selectedPiece = None
+        self.pieces = []
 
-        self.container = QWidget()
+        self.main_window.setStyleSheet("background-color:yellow;")
+
+        container = QWidget()
         mainHbox = QHBoxLayout()
         rightVBox = QVBoxLayout()
         piecesGrid = QGridLayout()
 
-        self.container.setLayout(mainHbox)
+        container.setLayout(mainHbox)
 
-        self.player_label = QLabel("Joueur 1")
-        self.player_label.setFixedSize(500, 240)
-        self.player_label.setStyleSheet("""
-                                  QLabel{
-                                      color : rgb(227,27,27);
-                                      font-weight:bold;
-                                  }
+        player_label = QLabel("Joueur 1")
+        player_label.setFixedSize(500,240)
+        player_label.setStyleSheet("""
+                            QLabel{
+                                color : red;
+                                font-weight:bold;
+                            }
+        
+                                    """)
+        player_label.setFont(QFont('Comic Sans MS', 60))
+        player_label.setAlignment(Qt.AlignCenter)
 
-                                          """)
-        self.player_label.setFont(QFont('Comic Sans MS', 60))
-        self.player_label.setAlignment(Qt.AlignCenter)
-
-        rightVBox.addWidget(self.player_label)
+        rightVBox.addWidget(player_label)
         rightVBox.addLayout(piecesGrid)
 
-        i, j = 0, 0
+        i,j = 0,0
         for piece in m.pieces:
-            p = GraphicPiece(piece, self.game)
-            self.game.add_piece(p)
-            piecesGrid.addWidget(p.widget, i, j)
+            p = GraphicPiece(piece,self)
+            self.pieces.append(p)
+            piecesGrid.addWidget(p.widget,i,j)
             j += 1
             if j == 5:
                 i += 1
                 j = 0
-        self.game.set_selected_piece(self.game.pieces[0])
-        self.game.pieces[0].click()
+        self.selectedPiece = self.pieces[0]
+
         piecesGrid.setSpacing(0)
 
         mainHbox.addWidget(self.gridGraphics.grid)
         mainHbox.addLayout(rightVBox)
 
-        self.container.setStyleSheet("background-color:rgb(117,117,143);")
-        self.container.show()
+        container.setStyleSheet("background-color:rgb(210,210,210);")
+        #container.setFixedSize(self.main_window.size())
+        container.show()
 
-        self.setCentralWidget(self.container)
+        self.main_window.keyPressEvent = self.keyPressEvent
 
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        #self.main_window.setFixedSize(self.main_window.size())
+        self.app.exec()
+
     def keyPressEvent(self, event):
         if isinstance(event, QKeyEvent):
             key_text = event.text()
-            if key_text == "z":
-                self.game.selectedPiece.change_version()
-            if key_text == "j":
-                self.game.change_player()
-
-    def change_background_color(self,player):
-        if player == 0:
-            self.container.setStyleSheet("background-color:rgb(117,117,143);")
-        else:
-            self.container.setStyleSheet("background-color:rgb(117,143,130);")
-
-class Game:
-    def __init__(self):
-        self.player = 0
-        self.pieces = []
-        self.graphics = GameGraphics(self)
-        self.selectedPiece = None
-
-        self.graphics.show()
-
-    def add_piece(self,piece):
-        self.pieces.append(piece)
-
-    def set_selected_piece(self,piece):
-        self.selectedPiece = piece
-
-    def change_player(self):
-        self.player = (self.player+1)%2
-        self.graphics.change_background_color(self.player)
-        self.graphics.player_label.setText(f"Joueur {self.player+1}")
-
+            print(key_text)
+            self.selectedPiece.change_version()
 class GraphicPiece:
     def __init__(self,piece,game):
         self.piece = piece
@@ -110,7 +88,7 @@ class GraphicPiece:
                 if (i, a) in self.versions[self.version]:
                     rect.setStyleSheet("""
                                                          QPushButton{
-                                                             border: 1px solid rgb(0,0,100);
+                                                             border: 1px solid rgb(0,0,200);
                                                              background-color:blue;
                                                          }
                                          """)
@@ -139,15 +117,15 @@ class GraphicPiece:
         for r in self.rects:
             if r[1]:r[0].setStyleSheet("""
                                                                      QPushButton{
-                                                                         border: 1px solid rgb(225,131,0);
-                                                                         background-color:rgb(255,151,0);
+                                                                         border: 1px solid rgb(200,0,0);
+                                                                         background-color:red;
                                                                      }
                                                      """)
     def dark(self):
         for r in self.rects:
             if r[1]:r[0].setStyleSheet("""
                                                                      QPushButton{
-                                                                         border: 1px solid rgb(0,0,100);
+                                                                         border: 1px solid rgb(0,0,200);
                                                                          background-color:blue;
                                                                      }
                                                      """)
@@ -159,8 +137,8 @@ class GraphicPiece:
                 if (i, a) in self.versions[self.version]:
                     self.rects[index][0].setStyleSheet("""
                                                          QPushButton{
-                                                            border: 1px solid rgb(225,131,0);
-                                                            background-color:rgb(255,151,0);
+                                                             border: 1px solid rgb(0,0,200);
+                                                             background-color:blue;
                                                          }
                                          """)
                     self.rects[index] = (self.rects[index][0],True)
@@ -174,10 +152,8 @@ class GraphicPiece:
 
 
 
-app = QApplication(sys.argv)
-g = Game()
-sys.exit(app.exec_())
 
+g = Game()
 
 
 

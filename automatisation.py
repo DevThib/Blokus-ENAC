@@ -10,19 +10,16 @@ def retournement(piece):
 
 
 def versions(piece):
+    n=len(piece)
     v1=retournement(piece)
     D={1:[],2:[],3:[],4:[],5:[],6:[],7:[],8:[]}
-    p=piece.copy()
-    D[1]=p[1]
-    v=v1.copy()
-    D[2]=v[1]
-    for i in range(len(p[1])):
-        p1=piece.copy()
-        a,b=p1[1][i]
+    D[1]=piece[1].copy()
+    D[2]=v1[1].copy()
+    for i in range(n):
+        a,b=piece[1][i]
         a=b
         b=-a
-        p1[1][i]=(a,b)
-    D[3]=p1[1]
+        D[3].append(a,b)
     for i in range(len(piece[1])):
         p2=piece.copy()
         a,b=p2[1][i]

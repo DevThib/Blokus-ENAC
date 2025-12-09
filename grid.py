@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout,QGridLayout
+from PyQt5.QtWidgets import  QWidget, QPushButton,QGridLayout
 import sys
 from PyQt5.QtCore import Qt
 
@@ -26,13 +26,16 @@ class Grid:
                 gridLayout.addWidget(c.button,i,a)
                 self.cases.append(c)
         return container
-    def add_piece(self, piece, pos,player):
-        for t in piece:
+    def add_piece(self, piece,version, pos,player):
+        for t in piece[version]:
             if pos[0]+t[0] < self.width and pos [1]+t[1]< self.height:
                 self.mat[pos[0]+t[0],pos[1]+t[1]] = player+1
-                case = self.cases[(pos[0]+t[0])*self.height+(pos[1]+t[1])]
+                self.game.grids[player][pos[0]+t[0],pos[1]+t[1]] = player+1
+                case = self.cases[(pos[0] + t[0]) * self.height + (pos[1] + t[1])]
                 case.change_color(player)
                 case.clickable = False
+        self.game.remove_piece_for_player(player, piece)
+
 
 class Case:
     def __init__(self,x,y,grid):
@@ -62,22 +65,22 @@ class Case:
 
     def on_clicked(self):
         if self.clickable:
-            self.grid.add_piece(self.grid.game.selectedPiece.piece[self.grid.game.selectedPiece.version+1],(self.x,self.y),self.grid.game.player)
-
+            self.grid.add_piece(self.grid.game.selectedPiece.piece,self.grid.game.selectedPiece.version+1,(self.x,self.y),self.grid.game.player)
+            self.grid.game.change_player()
     def change_color(self,player):
         if player == 0:
             self.button.setCursor(Qt.CursorShape.ArrowCursor)
             self.button.setStyleSheet("""
                                                       QPushButton {
-                                                          border: 1px solid rgb(225,131,0);
-                                                          background-color:rgb(255,151,0);
+                                                          border: 1px solid rgb(0,90,0);
+                                                          background-color:rgb(0,140,0);
                                                       }
                                                              """)
         else:
             self.button.setCursor(Qt.CursorShape.ArrowCursor)
             self.button.setStyleSheet("""
                                                                   QPushButton {
-                                                                      border: 1px solid rgb(225,131,0);
-                                                                      background-color:rgb(255,151,0);
+                                                                      border: 1px solid rgb(90,0,0);
+                                                                      background-color:rgb(140,0,0);
                                                                   }
                                                                          """)

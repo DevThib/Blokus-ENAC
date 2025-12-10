@@ -36,6 +36,10 @@ class Grid:
                 case.clickable = False
         self.game.remove_piece_for_player(player, piece)
 
+    def get_coordinates(self,case):
+        for i in range(len(self.cases)):
+            if self.cases[i].button == case:
+                return (i//self.width,i%self.width)
 
 class Case:
     def __init__(self,x,y,grid):
@@ -46,22 +50,49 @@ class Case:
         self.clickable = True
 
     def create_button(self):
-        b = QPushButton()
-        b.clicked.connect(self.on_clicked)
-        b.setFixedSize(50, 50)
-        b.setCursor(Qt.CursorShape.PointingHandCursor)
-        b.setStyleSheet("""
-                                          QPushButton {
-                                              background-color: rgb(150,150,150);
-                                              border:2.5px solid rgb(100,100,100);
-                                          }
-                                          QPushButton:hover{
-                                            background-color: rgb(120,120,120);
-                                            border:2.5px solid rgb(255,151,0);
-                                          }
-                                                 """)
+        class CaseButton(QPushButton):
+            def __init__(self,case):
+                super().__init__()
+                self.clicked.connect(case.on_clicked)
+                self.setFixedSize(50, 50)
+                self.setCursor(Qt.CursorShape.PointingHandCursor)
+                self.setStyleSheet("""
+                                                  QPushButton {
+                                                      background-color: rgb(150,150,150);
+                                                      border:2.5px solid rgb(100,100,100);
+                                                  }
+                                                  
+                                                         """)
 
-        return b
+                self.case = case
+            def enterEvent(self, a0):
+                pos = self.case.grid.get_coordinates(self)
+                for c in self.case.grid.game.selectedPiece.piece[self.case.grid.game.selectedPiece.version+1]:
+                    cb = self.case.grid.cases[(pos[0]+c[0])*self.case.grid.width+pos[1]+c[1]]
+                    if cb.clickable:
+                        cb.button.setStyleSheet("""
+                                                                          QPushButton {
+                                                                              background-color: rgb(150,150,150);
+                                                                              border:2.5px solid orange;
+                                                                          }
+                                                                
+                                                                                 """)
+            def leaveEvent(self, a0):
+                pos = self.case.grid.get_coordinates(self)
+                for c in self.case.grid.game.selectedPiece.piece[self.case.grid.game.selectedPiece.version + 1]:
+                    cb = self.case.grid.cases[(pos[0] + c[0]) * self.case.grid.width + pos[1] + c[1]]
+                    if cb.clickable:
+                        cb.button.setStyleSheet("""
+                                               QPushButton {
+                                                          background-color: rgb(150,150,150);
+                                                          border:2.5px solid rgb(100,100,100);
+                                                      }
+    
+                                                                                                 """)
+
+
+
+        return CaseButton(self)
 
     def on_clicked(self):
         if self.clickable:

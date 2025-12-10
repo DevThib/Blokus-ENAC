@@ -10,51 +10,49 @@ def retournement(piece):
 
 
 def versions(piece):
-    n=len(piece)
+    n=len(piece[1])
     v1=retournement(piece)
     D={1:[],2:[],3:[],4:[],5:[],6:[],7:[],8:[]}
     D[1]=piece[1].copy()
-    D[2]=v1[1].copy()
+    D[1]=sorted(D[1])
     for i in range(n):
         a,b=piece[1][i]
-        a=b
+        afin=b
         b=-a
-        D[3].append(a,b)
-    for i in range(len(piece[1])):
-        p2=piece.copy()
-        a,b=p2[1][i]
-        a=-a
+        D[2].append((afin,b))
+    D[2]=sorted(D[2])
+    for i in range(n):
+        a,b=piece[1][i]
+        afin=-a
         b=-b
-        p2[1][i]=(a,b)
-    D[4]=p2[1]
-    for i in range(len(piece[1])):
-        p3=piece.copy()
-        a,b=p3[1][i]
-        a=-b
+        D[3].append((afin,b))
+    D[3]=sorted(D[3])
+    for i in range(n):
+        a,b=piece[1][i]
+        afin=-b
         b=a
-        p3[1][i]=(a,b)   
-    D[5]=p3[1]
-    for i in range(len(v1[1])):
-        p4=v1.copy()
-        a,b=p4[1][i]
-        a=b
+        D[4].append((afin,b))
+    D[4]=sorted(D[4])
+    D[5]=v1[1]
+    D[5]=sorted(D[5])
+    for i in range(n):
+        a,b=v1[1][i]
+        afin=b
         b=-a
-        p4[1][i]=(a,b)
-    D[6]=p4[1]
-    for i in range(len(v1[1])):
-        p5=v1.copy()
-        a,b=p5[1][i]
-        a=-a
+        D[6].append((afin,b))
+    D[6]=sorted(D[6])
+    for i in range(n):
+        a,b=v1[1][i]
+        afin=-a
         b=-b
-        p5[1][i]=(a,b)
-    D[7]=p5[1]
-    for i in range(len(v1[1])):
-        p6=v1.copy()
-        a,b=p6[1][i]
-        a=-b
+        D[7].append((afin,b))
+    D[7]=sorted(D[7])
+    for i in range(n):
+        a,b=v1[1][i]
+        afin=-b
         b=a
-        p6[1][i]=(a,b)
-    D[8]=p6[1]
+        D[8].append((afin,b))
+    D[8]=sorted(D[8])
     for i in range(1,8):
         for j in range(i+1,9):
             if D[i]==D[j]:
@@ -64,5 +62,7 @@ def versions(piece):
             del D[k]
     return D   
         
-piece_2={1:[(0,0),(0,1)]}
-print(versions(piece_2))
+piece_17={1:[(0,0),(0,1),(0,2),(1,0),(2,0)]}
+print(versions(piece_17))
+
+

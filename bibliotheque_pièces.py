@@ -1,0 +1,26 @@
+# Bibliothèque de pièces du jeu Blokus (21 pièces numérotées de 1 à 21 selon les règles du jeu)
+# Dictionnaire de tuples d'origine (0,0) en bas à gauche, coordonnées en (ligne,colonne)
+# Ordre des versions : rotation 90° sens trigo à partir de la version "règles du jeu" puis retournement version initiale et à nouveau rotation 90° sens trigo
+import matplotlib.pyplot as plt
+piece_1={1:[(0,0)]}
+piece_2={1:[(0,0),(1,0)]}
+piece_3={1:[(0,0),(1,0),(2,0)]}
+piece_4={1:[(0,0),(1,0),(1,1)]}
+piece_5={1:[(0,0),(1,0),(2,0),(3,0)]}
+piece_6={1:[(0,0),(1,0),(2,0),(2,1)]}
+piece_7={1:[(0,0),(1,0),(1,1),(2,0)]}
+piece_8={1:[(0,0),(0,1),(1,0),(1,1)]}
+piece_9={1:[(0,0),(0,1),(1,1),(1,2)]}
+piece_10={1:[(0,0),(1,0),(2,0),(3,0),(4,0)]}
+piece_11={1:[(0,0),(1,0),(2,0),(3,0),(3,1)]}
+piece_12={1:[(0,0),(1,0),(2,0),(2,1),(3,1)]}
+piece_13={1:[(0,0),(0,1),(1,1),(0,2),(1,2)]}
+piece_14={1:[(0,0),(0,1),(1,1),(2,0),(2,1)]}
+piece_15={1:[(0,0),(1,0),(2,0),(1,1),(3,0)]}
+piece_16={1:[(0,0),(1,0),(2,0),(1,1),(1,2)]}
+piece_17={1:[(0,0),(0,1),(0,2),(1,0),(2,0)]}
+piece_18={1:[(0,0),(0,1),(1,1),(1,2),(2,2)]}
+piece_19={1:[(0,0),(1,0),(1,1),(1,2),(2,2)]}
+piece_20={1:[(0,0),(1,0),(1,1),(1,2),(2,1)]}
+piece_21={1:[(0,1),(1,0),(1,1),(1,2),(2,1)]}
+pieces=(piece_1,piece_2,piece_3,piece_4,piece_5,piece_6,piece_7,piece_8,piece_9,piece_10,piece_11,piece_12,piece_13,piece_14,piece_15,piece_16,piece_17,piece_18,piece_19,piece_20,piece_21)

@@ -28,25 +28,24 @@ class Grid:
         return container
     def add_piece(self, piece,version, pos,player):
         for t in piece[version]:
-            if pos[0]+t[0] < self.width and pos [1]+t[1]< self.height:
-                self.mat[pos[0]+t[0],pos[1]+t[1]] = player+1
-                self.game.grids[player][pos[0]+t[0],pos[1]+t[1]] = player+1
+            if pos[0]+t[0] < self.width and pos[1]+t[1]< self.height:
+                #CHANGER POUR QUE CA FASSE AVEC LES NOUVELLES MATRICES
                 case = self.cases[(pos[0] + t[0]) * self.height + (pos[1] + t[1])]
                 case.change_color(player)
                 case.clickable = False
         self.game.remove_piece_for_player(player, piece)
 
-    def get_coordinates(self,case):
+    def get_coordinates(self,caseButton):
         for i in range(len(self.cases)):
-            if self.cases[i].button == case:
+            if self.cases[i].button == caseButton:
                 return (i//self.width,i%self.width)
 
 class Case:
     def __init__(self,x,y,grid):
+        self.grid = grid
         self.button = self.create_button()
         self.x = x
         self.y = y
-        self.grid = grid
         self.clickable = True
 
     def create_button(self):
@@ -54,7 +53,7 @@ class Case:
             def __init__(self,case):
                 super().__init__()
                 self.clicked.connect(case.on_clicked)
-                self.setFixedSize(50, 50)
+                self.setFixedSize(int(700/case.grid.width), int(700/case.grid.height))
                 self.setCursor(Qt.CursorShape.PointingHandCursor)
                 self.setStyleSheet("""
                                                   QPushButton {
@@ -66,8 +65,8 @@ class Case:
 
                 self.case = case
             def enterEvent(self, a0):
-                pos = self.case.grid.get_coordinates(self)
-                for c in self.case.grid.game.selectedPiece.piece[self.case.grid.game.selectedPiece.version+1]:
+                pos = (self.case.x,self.case.y)
+                for c in self.case.grid.game.selectedPiece.piece[self.case.grid.game.selectedPiece.version+1]:#REMPLACER PAR LA FONCTION GET8VERSION DANS GRAPHICPIECE
                     cb = self.case.grid.cases[(pos[0]+c[0])*self.case.grid.width+pos[1]+c[1]]
                     if cb.clickable:
                         cb.button.setStyleSheet("""
@@ -78,8 +77,8 @@ class Case:
                                                                 
                                                                                  """)
             def leaveEvent(self, a0):
-                pos = self.case.grid.get_coordinates(self)
-                for c in self.case.grid.game.selectedPiece.piece[self.case.grid.game.selectedPiece.version + 1]:
+                pos = (self.case.x,self.case.y)
+                for c in self.case.grid.game.selectedPiece.piece[self.case.grid.game.selectedPiece.version + 1]:#REMPLACER PAR LA FONCTION GET8VERSION DANS GRAPHICPIECE
                     cb = self.case.grid.cases[(pos[0] + c[0]) * self.case.grid.width + pos[1] + c[1]]
                     if cb.clickable:
                         cb.button.setStyleSheet("""
@@ -90,14 +89,13 @@ class Case:
     
                                                                                                  """)
 
-
-
         return CaseButton(self)
 
     def on_clicked(self):
         if self.clickable:
-            self.grid.add_piece(self.grid.game.selectedPiece.piece,self.grid.game.selectedPiece.version+1,(self.x,self.y),self.grid.game.player)
-            self.grid.game.change_player()
+            if self.grid.game.place_piece((self.x,self.y)):
+                self.grid.add_piece(self.grid.game.selectedPiece.piece,self.grid.game.selectedPiece.version+1,(self.x,self.y),self.grid.game.player)#REMPLACER PAR LA FONCTION GET8VERSION DANS GRAPHICPIECE
+
     def change_color(self,player):
         if player == 0:
             self.button.setCursor(Qt.CursorShape.ArrowCursor)

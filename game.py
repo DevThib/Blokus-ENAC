@@ -1,10 +1,14 @@
 from grid import Grid
-import numpy as np
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout,QLabel,QGridLayout,QMainWindow
 from PyQt5.QtGui import QFont, QKeyEvent
 import sys
 import main as m
 from PyQt5.QtCore import Qt
+
+import init_plateau as init
+import possibilites_jeu_version as poss
+import pose_version as placing
+import debut_partie as starting
 
 class GameGraphics(QMainWindow):
     def __init__(self,game):
@@ -87,8 +91,8 @@ class Game:
         self.pieces = []
         self.selectedPiece = None
         self.graphics = GameGraphics(self)
-
-        self.grids = (np.zeros((14, 14)),np.zeros((14, 14)))
+        self.firstPiece = [True,True]
+        self.grids = init.initialisation()
         self.piecesPlayer = ([p for p in m.pieces],[p for p in m.pieces])
 
         self.graphics.show()
@@ -116,6 +120,25 @@ class Game:
         for p in self.pieces:
             if p.piece == piece:
                 return p
+    def place_piece(self,pos):
+        if self.firstPiece[self.player]:
+            starting.coup_1(self.grids[0],self.grids[1],self.player,self.selectedPiece.get_version(),(0,0))
+            self.firstPiece[self.player] = False
+            self.change_player()
+            return True
+        else:
+            if pos in poss.possibilites(self.grids[self.player],self.selectedPiece.get_version())[1]:
+                print(self.grids[0],self.grids[1],self.player,pos,self.selectedPiece.get_version())
+                placing.pose(self.grids[0],self.grids[1],self.player,pos,self.selectedPiece.get_version())
+                print("eeeeeeeee")
+                self.change_player()
+                return True
+            else:
+                print(poss.possibilites(self.grids[self.player],self.selectedPiece.get_version())[1])
+                print(pos)
+
+                return False
+
 
 class GraphicPiece:
     def __init__(self,piece,game):
@@ -209,6 +232,9 @@ class GraphicPiece:
                                                          """)
         elif self.game.selectedPiece != self:
             self.dark()
+
+    def get_version(self):
+        return self.piece[self.version+1]
 
 app = QApplication(sys.argv)
 g = Game()

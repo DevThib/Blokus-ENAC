@@ -8,7 +8,6 @@ class Grid:
     def __init__(self, width, height,game):
         self.width = width
         self.height = height
-        self.mat = np.zeros((width, height))
         self.cases = []
         self.grid = self.build_grid()
         self.game = game
@@ -29,7 +28,6 @@ class Grid:
     def add_piece(self, piece,version, pos,player):
         for t in piece[version]:
             if pos[0]+t[0] < self.width and pos[1]+t[1]< self.height:
-                #CHANGER POUR QUE CA FASSE AVEC LES NOUVELLES MATRICES
                 case = self.cases[(pos[0] + t[0]) * self.height + (pos[1] + t[1])]
                 case.change_color(player)
                 case.clickable = False
@@ -39,6 +37,11 @@ class Grid:
         for i in range(len(self.cases)):
             if self.cases[i].button == caseButton:
                 return (i//self.width,i%self.width)
+
+    def dark_border_case(self,pos):
+        self.cases[pos[0]*self.width+pos[1]].button.darken_border()
+    def grey_border_case(self,pos):
+        self.cases[pos[0]*self.width+pos[1]].button.greyen_border()
 
 class Case:
     def __init__(self,x,y,grid):
@@ -59,43 +62,61 @@ class Case:
                                                   QPushButton {
                                                       background-color: rgb(150,150,150);
                                                       border:2.5px solid rgb(100,100,100);
-                                                  }
-                                                  
+                                                  }                                    
                                                          """)
 
                 self.case = case
             def enterEvent(self, a0):
                 pos = (self.case.x,self.case.y)
-                for c in self.case.grid.game.selectedPiece.piece[self.case.grid.game.selectedPiece.version+1]:#REMPLACER PAR LA FONCTION GET8VERSION DANS GRAPHICPIECE
-                    cb = self.case.grid.cases[(pos[0]+c[0])*self.case.grid.width+pos[1]+c[1]]
-                    if cb.clickable:
-                        cb.button.setStyleSheet("""
-                                                                          QPushButton {
-                                                                              background-color: rgb(150,150,150);
-                                                                              border:2.5px solid orange;
-                                                                          }
-                                                                
-                                                                                 """)
+                for c in self.case.grid.game.selectedPiece.get_version():
+                    if (pos[0]+c[0])*self.case.grid.width+pos[1]+c[1] < self.case.grid.height*self.case.grid.width:
+                        cb = self.case.grid.cases[(pos[0]+c[0])*self.case.grid.width+pos[1]+c[1]]
+                        if cb.clickable:
+                            cb.button.setStyleSheet("""
+                                                                              QPushButton {
+                                                                                  background-color: rgb(150,150,150);
+                                                                                  border:2.5px solid orange;
+                                                                              }
+                                                                    
+                                                                                     """)
             def leaveEvent(self, a0):
                 pos = (self.case.x,self.case.y)
-                for c in self.case.grid.game.selectedPiece.piece[self.case.grid.game.selectedPiece.version + 1]:#REMPLACER PAR LA FONCTION GET8VERSION DANS GRAPHICPIECE
-                    cb = self.case.grid.cases[(pos[0] + c[0]) * self.case.grid.width + pos[1] + c[1]]
-                    if cb.clickable:
-                        cb.button.setStyleSheet("""
-                                               QPushButton {
-                                                          background-color: rgb(150,150,150);
-                                                          border:2.5px solid rgb(100,100,100);
-                                                      }
+                for c in self.case.grid.game.selectedPiece.get_version():
+                    if (pos[0]+c[0])*self.case.grid.width+pos[1]+c[1] < self.case.grid.height*self.case.grid.width:
+                        cb = self.case.grid.cases[(pos[0] + c[0]) * self.case.grid.width + pos[1] + c[1]]
+                        if cb.clickable:
+                            if (pos[0]+c[0],c[1]+pos[1]) in self.case.grid.game.gridListener.possibilities[self.case.grid.game.player]:
+                                cb.button.darken_border()
+                            else:
+                                cb.button.greyen_border()
+            def darken_border(self):
+                if self.case.clickable:
+                    self.setStyleSheet("""
+                                                QPushButton {
+                                                background-color: rgb(150,150,150);
+                                                border:2.5px solid black;
+                                                }
     
-                                                                                                 """)
+                                                                                                             """)
+
+            def greyen_border(self):
+                if self.case.clickable:
+                    self.setStyleSheet("""
+                                                QPushButton {
+                                                background-color: rgb(150,150,150);
+                                                border:2.5px solid rgb(100,100,100);
+                                                }
+
+                                                                                                             """)
 
         return CaseButton(self)
 
     def on_clicked(self):
         if self.clickable:
             if self.grid.game.place_piece((self.x,self.y)):
-                self.grid.add_piece(self.grid.game.selectedPiece.piece,self.grid.game.selectedPiece.version+1,(self.x,self.y),self.grid.game.player)#REMPLACER PAR LA FONCTION GET8VERSION DANS GRAPHICPIECE
-
+                self.grid.add_piece(self.grid.game.selectedPiece.piece,self.grid.game.selectedPiece.version+1,(self.x,self.y),self.grid.game.player)
+                self.grid.game.change_player()
+                self.grid.game.selectedPiece.show_possibilities()
     def change_color(self,player):
         if player == 0:
             self.button.setCursor(Qt.CursorShape.ArrowCursor)

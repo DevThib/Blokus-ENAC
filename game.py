@@ -2,13 +2,16 @@ from grid import Grid
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout,QLabel,QGridLayout,QMainWindow
 from PyQt5.QtGui import QFont, QKeyEvent
 import sys
-import main as m
-from PyQt5.QtCore import Qt
+import automatisation as auto
+from PyQt5.QtCore import Qt, QObject
 
 import init_plateau as init
 import possibilites_jeu_version as poss
 import pose_version as placing
 import debut_partie as starting
+import clicable as clic
+
+import new_variations as v
 
 class GameGraphics(QMainWindow):
     def __init__(self,game):
@@ -17,7 +20,7 @@ class GameGraphics(QMainWindow):
 
         self.gridGraphics = Grid(14, 14,game)
 
-        self.container = QWidget()
+        self.container = QWidget(objectName = "test")
         mainHbox = QHBoxLayout()
         rightVBox = QVBoxLayout()
         piecesGrid = QGridLayout()
@@ -32,7 +35,6 @@ class GameGraphics(QMainWindow):
                                     font-family: Goudy stout;
                                     font-size: 50px;
                                   }
-
                                           """)
         self.player_label.setFont(QFont('Comic Sans MS', 60))
         self.player_label.setAlignment(Qt.AlignCenter)
@@ -41,7 +43,7 @@ class GameGraphics(QMainWindow):
         rightVBox.addLayout(piecesGrid)
 
         i, j = 0, 0
-        for piece in m.pieces:
+        for piece in auto.pieces:
             p = GraphicPiece(piece, self.game)
             self.game.add_piece(p)
             piecesGrid.addWidget(p.widget, i, j)
@@ -50,19 +52,22 @@ class GameGraphics(QMainWindow):
                 i += 1
                 j = 0
         self.game.set_selected_piece(self.game.pieces[0])
+        self.game.pieces[0].show_possibilities()
         self.game.pieces[0].click()
         piecesGrid.setSpacing(0)
 
         mainHbox.addWidget(self.gridGraphics.grid)
         mainHbox.addLayout(rightVBox)
-
         self.container.setStyleSheet("background-color:rgb(117,117,143);")
+        self.container.setStyleSheet("""
+                             QWidget#test{
+                                    background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb(87, 199, 133), stop:1 rgb(237, 221, 83));;
+                                }
+                                
+        
+        """)
         self.container.show()
-
         self.setCentralWidget(self.container)
-
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-
         self.setFixedSize(self.container.size())
 
     def update_pieces(self,player):
@@ -77,23 +82,28 @@ class GameGraphics(QMainWindow):
             if key_text == "j":
                 self.game.change_player()
             if key_text == "m":
-                print(self.game.grids[0])
+                print(self.game.gridListener.grids[0])
 
     def change_background_color(self,player):
         if player == 0:
-            self.container.setStyleSheet("background-color:rgb(117,117,143);")
+            self.container.setStyleSheet("""
+                                         QWidget#test{
+                                                background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb(87, 199, 133), stop:1 rgb(237, 221, 83));;
+                                            }""")
         else:
-            self.container.setStyleSheet("background-color:rgb(117,143,130);")
-
+            self.container.setStyleSheet("""
+                                         QWidget#test{
+                                                background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb(255, 129, 0), stop:1 rgb(71, 212, 202));;
+                                            }""")
 class Game:
-    def __init__(self):
+    def __init__(self,bot):
         self.player = 0
         self.pieces = []
         self.selectedPiece = None
+        self.gridListener = v.GridListener(14,14)
         self.graphics = GameGraphics(self)
-        self.firstPiece = [True,True]
-        self.grids = init.initialisation()
-        self.piecesPlayer = ([p for p in m.pieces],[p for p in m.pieces])
+        self.piecesPlayer = ([p for p in auto.pieces],[p for p in auto.pieces])
+        self.bot = bot
 
         self.graphics.show()
 
@@ -121,23 +131,18 @@ class Game:
             if p.piece == piece:
                 return p
     def place_piece(self,pos):
-        if self.firstPiece[self.player]:
-            starting.coup_1(self.grids[0],self.grids[1],self.player,self.selectedPiece.get_version(),(0,0))
-            self.firstPiece[self.player] = False
-            self.change_player()
+        if pos in self.gridListener.possibilities[self.player]:
+            self.gridListener.place_piece(self.selectedPiece.get_version(),pos,self.player)
             return True
         else:
-            if pos in poss.possibilites(self.grids[self.player],self.selectedPiece.get_version())[1]:
-                print(self.grids[0],self.grids[1],self.player,pos,self.selectedPiece.get_version())
-                placing.pose(self.grids[0],self.grids[1],self.player,pos,self.selectedPiece.get_version())
-                print("eeeeeeeee")
-                self.change_player()
-                return True
-            else:
-                print(poss.possibilites(self.grids[self.player],self.selectedPiece.get_version())[1])
-                print(pos)
+            return False
 
-                return False
+    def check_win(self):
+        pass
+
+    def bot_play(self):
+        pass
+        #DEVELOPPEMENT DU BOT ALEATOIRE EN COURS
 
 
 class GraphicPiece:
@@ -177,14 +182,31 @@ class GraphicPiece:
         self.widget.setContentsMargins(0, 0, 0, 0)
         self.widget.mousePressEvent = lambda event: self.click()
         self.widget.setLayout(self.grid)
+        self.widget.setCursor(Qt.CursorShape.PointingHandCursor)
         self.grid.setSpacing(0)
 
     def click(self):
         if self.clickable[self.game.player]:
             self.game.selectedPiece = self
             self.bright()
+            self.show_possibilities()
             for p in self.game.pieces:
-                if p != self and p.clickable[self.game.player] == True:p.dark()
+                if p != self and p.clickable[self.game.player]:p.dark()
+    def show_possibilities(self):
+        try:
+            for p in self.game.gridListener.possibilities[self.game.player]:
+                self.game.graphics.gridGraphics.grey_border_case(p)
+        except AttributeError as e:
+            pass
+
+        self.game.gridListener.update_possibilities(self.game.player, self.game.selectedPiece.get_version())
+
+        try:
+            for p in self.game.gridListener.possibilities[self.game.player]:
+                self.game.graphics.gridGraphics.dark_border_case(p)
+        except AttributeError:
+            pass
+
     def bright(self):
         for r in self.rects:
             if r[1]:r[0].setStyleSheet("""
@@ -212,15 +234,17 @@ class GraphicPiece:
                                                             border: 1px solid rgb(225,131,0);
                                                             background-color:rgb(255,151,0);
                                                          }
-                                         """)
+                                                        """)
                     self.rects[index] = (self.rects[index][0],True)
                 else:
                     self.rects[index][0].setStyleSheet("""
                                                          QPushButton{
                                                              background-color:transparent;
                                                          }
-                                         """)
+                                                        """)
                     self.rects[index] = (self.rects[index][0],False)
+
+        self.show_possibilities()
 
     def set_visible(self,visible):
         if not visible:
@@ -236,8 +260,11 @@ class GraphicPiece:
     def get_version(self):
         return self.piece[self.version+1]
 
+
+
+
 app = QApplication(sys.argv)
-g = Game()
+g = Game(False)
 sys.exit(app.exec_())
 
 

@@ -27,12 +27,15 @@ class GridListener:
                     for c in self.corners(version,(i,a)):
                         if c in self.clickable[player]:
                             test = True
-                            for t in self.get_critical_cases(version,(i,a),3)+self.adjacents((i,a),version):
-                                #PROBLEME DANS LES CASES ADJACENTES
-                                print(self.adjacents((i,a),version))
-                                if self.grids[player][t[1],t[0]] == 5:
+                            for t in self.get_critical_cases(version,(i,a),3):
+                                if self.grids[2][t[1],t[0]] == 5: #cases critiques = obligatoirement libres
                                     test = False
                                     break
+                            for t in self.adjacents((i,a),version):
+                                if t[1] >= 5 and t[1] <= 18 and t[0] >= 5 and t[0] <= 18:
+                                    if self.grids[player][t[1], t[0]] == 5:#cases adjacentes = il ne faut pas que ce soit une case du joueur
+                                        test = False
+                                        break
                             if test and (i,a) not in possibilities:
                                 possibilities.append((i-5,a-5))#-5 pour qu'elle s'adapte a la grille affichée
         return possibilities
@@ -122,6 +125,7 @@ class GridListener:
 
     def adjacents(self,case,version):
         #renvoie les case adjacentes à toutes les cases d'une version
+        #PROBLEMES : certaines ne sont pas bonnes,on peut placer a coté de cases adjacentes
         adj = []
         for t in version:
             if (case[0]+t[0]-1,case[1]+t[1]) not in adj:adj.append((case[0]+t[0]-1,case[1]+t[1]))

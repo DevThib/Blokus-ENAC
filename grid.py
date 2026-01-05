@@ -84,11 +84,10 @@ class Case:
                 for c in self.case.grid.game.selectedPiece.get_version():
                     if (pos[0]+c[0])*self.case.grid.width+pos[1]+c[1] < self.case.grid.height*self.case.grid.width:
                         cb = self.case.grid.cases[(pos[0] + c[0]) * self.case.grid.width + pos[1] + c[1]]
-                        if cb.clickable:
-                            if (pos[0]+c[0],c[1]+pos[1]) in self.case.grid.game.gridListener.possibilities[self.case.grid.game.player]:
-                                cb.button.darken_border()
-                            else:
-                                cb.button.greyen_border()
+                        if (pos[0] + c[0], c[1] + pos[1]) in self.case.grid.game.gridListener.possibilities[self.case.grid.game.player]:
+                            cb.button.darken_border()
+                        else:
+                            cb.button.greyen_border()
             def darken_border(self):
                 if self.case.clickable:
                     self.setStyleSheet("""
@@ -112,11 +111,12 @@ class Case:
         return CaseButton(self)
 
     def on_clicked(self):
-        if self.clickable:
-            if self.grid.game.place_piece((self.x,self.y)):
-                self.grid.add_piece(self.grid.game.selectedPiece.piece,self.grid.game.selectedPiece.version+1,(self.x,self.y),self.grid.game.player)
-                self.grid.game.change_player()
-                self.grid.game.selectedPiece.show_possibilities()
+        if self.grid.game.place_piece((self.x, self.y)):
+            self.grid.add_piece(self.grid.game.selectedPiece.piece, self.grid.game.selectedPiece.version + 1,(self.x, self.y), self.grid.game.player)
+            self.grid.game.change_player()
+            self.grid.game.selectedPiece.show_possibilities(self.grid.game.bot)
+            if self.grid.game.bot:
+                self.grid.game.bot_play()
     def change_color(self,player):
         if player == 0:
             self.button.setCursor(Qt.CursorShape.ArrowCursor)

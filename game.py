@@ -4,6 +4,7 @@ from PyQt5.QtGui import QFont, QKeyEvent
 import sys
 import automatisation as auto
 from PyQt5.QtCore import Qt, QObject
+from random import randint
 
 import init_plateau as init
 import possibilites_jeu_version as poss
@@ -52,7 +53,7 @@ class GameGraphics(QMainWindow):
                 i += 1
                 j = 0
         self.game.set_selected_piece(self.game.pieces[0])
-        self.game.pieces[0].show_possibilities()
+        self.game.pieces[0].show_possibilities(False)
         self.game.pieces[0].click()
         piecesGrid.setSpacing(0)
 
@@ -125,6 +126,8 @@ class Game:
         if self.selectedPiece.piece not in self.piecesPlayer[self.player]:
             self.selectedPiece = self.get_graphic_piece_by_piece(self.piecesPlayer[self.player][0])
             self.selectedPiece.bright()
+        self.check_win()
+
 
     def get_graphic_piece_by_piece(self,piece):
         for p in self.pieces:
@@ -138,12 +141,35 @@ class Game:
             return False
 
     def check_win(self):
-        pass
+        #vérifie la victoire du joueur opposé a celui qui vient de jouer
+        #on teste toute les cases restantes,si aucune n'a de possibilités alors c'est gagné
+        impossible = 0
+        for piece in self.piecesPlayer[self.player]:
+            self.get_graphic_piece_by_piece(piece).show_possibilities(True)
+            if len(self.gridListener.possibilities[self.player]) == 0:
+                impossible += 1
+        if impossible == len(self.piecesPlayer[self.player]):
+            print(f"Joueur {(self.player + 1) % 2} à gagné !!")
+            self.graphics.close()
 
     def bot_play(self):
-        pass
-        #DEVELOPPEMENT DU BOT ALEATOIRE EN COURS
-
+        piece = self.piecesPlayer[1][randint(0,len(self.piecesPlayer[1])-1)]
+        self.selectedPiece = self.get_graphic_piece_by_piece(piece)
+        self.selectedPiece.show_possibilities(True)
+        i = 0
+        while len(self.gridListener.possibilities[self.player]) == 0:
+            piece = self.piecesPlayer[1][randint(0, len(self.piecesPlayer[1]) - 1)]
+            self.selectedPiece = self.get_graphic_piece_by_piece(piece)
+            self.selectedPiece.show_possibilities(True)
+            i += 1
+            if i > 24:
+                self.check_win()
+                break
+        case = self.gridListener.possibilities[self.player][randint(0,len(self.gridListener.possibilities[self.player])-1)]
+        self.place_piece(case)
+        self.graphics.gridGraphics.add_piece(self.selectedPiece.piece, self.selectedPiece.version + 1,case, self.player)
+        self.change_player()
+        self.selectedPiece.show_possibilities(False)
 
 class GraphicPiece:
     def __init__(self,piece,game):
@@ -189,23 +215,23 @@ class GraphicPiece:
         if self.clickable[self.game.player]:
             self.game.selectedPiece = self
             self.bright()
-            self.show_possibilities()
+            self.show_possibilities(False)
             for p in self.game.pieces:
                 if p != self and p.clickable[self.game.player]:p.dark()
-    def show_possibilities(self):
-        try:
-            for p in self.game.gridListener.possibilities[self.game.player]:
-                self.game.graphics.gridGraphics.grey_border_case(p)
-        except AttributeError as e:
-            pass
-
+    def show_possibilities(self,bot):
+        if not bot:
+            try:
+                for p in self.game.gridListener.possibilities[self.game.player]:
+                    self.game.graphics.gridGraphics.grey_border_case(p)
+            except AttributeError as e:
+                pass
         self.game.gridListener.update_possibilities(self.game.player, self.game.selectedPiece.get_version())
-
-        try:
-            for p in self.game.gridListener.possibilities[self.game.player]:
-                self.game.graphics.gridGraphics.dark_border_case(p)
-        except AttributeError:
-            pass
+        if not bot:
+            try:
+                for p in self.game.gridListener.possibilities[self.game.player]:
+                    self.game.graphics.gridGraphics.dark_border_case(p)
+            except AttributeError:
+                pass
 
     def bright(self):
         for r in self.rects:
@@ -244,7 +270,7 @@ class GraphicPiece:
                                                         """)
                     self.rects[index] = (self.rects[index][0],False)
 
-        self.show_possibilities()
+        self.show_possibilities(False)
 
     def set_visible(self,visible):
         if not visible:
@@ -261,10 +287,8 @@ class GraphicPiece:
         return self.piece[self.version+1]
 
 
-
-
 app = QApplication(sys.argv)
-g = Game(False)
+g = Game(True)
 sys.exit(app.exec_())
 
 

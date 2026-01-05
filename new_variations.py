@@ -28,12 +28,12 @@ class GridListener:
                         if c in self.clickable[player]:
                             test = True
                             for t in self.get_critical_cases(version,(i,a),3):
-                                if self.grids[2][t[1],t[0]] == 5: #cases critiques = obligatoirement libres
+                                if self.grids[2][t[1],t[0]] == 5.0: #cases critiques = obligatoirement libres
                                     test = False
                                     break
                             for t in self.adjacents((i,a),version):
                                 if t[1] >= 5 and t[1] <= 18 and t[0] >= 5 and t[0] <= 18:
-                                    if self.grids[player][t[1], t[0]] == 5:#cases adjacentes = il ne faut pas que ce soit une case du joueur
+                                    if self.grids[player][t[1], t[0]] == 5.0:#cases adjacentes = il ne faut pas que ce soit une case du joueur
                                         test = False
                                         break
                             if test and (i,a) not in possibilities:
@@ -65,8 +65,9 @@ class GridListener:
             self.grids[player][real_pos[1]+t[1],real_pos[0]+t[0]] = 5
             self.grids[2][real_pos[1]+t[1],real_pos[0]+t[0]] = 5
         for e in self.ears(version,real_pos):
-            self.grids[player][e[0][1],e[0][0]] = e[1]
-            self.clickable[player].append(e[0])
+            if self.grids[player][e[0][1],e[0][0]] != 5.0:
+                self.grids[player][e[0][1],e[0][0]] = e[1]
+                self.clickable[player].append(e[0])
         if self.first[player]:self.first[player] = False
 
     def convert_pos(self,pos):
@@ -133,6 +134,7 @@ class GridListener:
             if (case[0] + t[0] + 1, case[1] + t[1]) not in adj:adj.append((case[0] + t[0] + 1, case[1] + t[1]))
             if (case[0] + t[0], case[1] + t[1]+1) not in adj:adj.append((case[0] + t[0], case[1] + t[1]+1))
         return adj
+
 #0:vide,-1:occupée,
 #1:NO,2:NE,4:SE,3:SO
 #direction complémentaire en diagonale ont une somme de 5 (au final je m'e suis pas servi)

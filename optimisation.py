@@ -38,3 +38,12 @@ def heuristique_pieces(game):
                     M.append(1)
                     score-=1
     return score
+
+def heuristique_bourrin(game):
+    score=0
+    adversaire=(game.player+1)%2
+    for elem in game.piecesPlayer[game.player]:
+        score-=len(elem[1])
+    for elem in game.piecesPlayer[adversaire]:
+        score+=len(elem[1])
+    return score

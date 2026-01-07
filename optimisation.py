@@ -2,13 +2,13 @@ import game as g
 import math
 from copy import deepcopy
 
-def heuristique_cases(game):
+def heuristique_cases(game, player):
     L={}
     N={}
-    adversaire=0 if game.player==1 else 1
-    for elem in game.piecesPlayer[game.player]:
+    adversaire=0 if player==1 else 1
+    for elem in game.piecesPlayer[player]:
         for version in elem.values():
-            M=game.gridListener.calc_possibilities(game.player,version)
+            M=game.gridListener.calc_possibilities(player,version)
             for e in M:
                 if e not in L:
                     L[e]=1
@@ -22,29 +22,25 @@ def heuristique_cases(game):
     score-=len(N)
     return score
                 
-def heuristique_pieces(game):
+def heuristique_pieces(game, player):
     score=0
-    adversaire=(game.player+1)%2
-    for elem in game.piecesPlayer[game.player]:
-        M=[]
+    adversaire=(player+1)%2
+    for elem in game.piecesPlayer[player]:
         for version in elem.values():
-            while M==[]:
-                if game.gridListener.calc_possibilities(game.player,version)!=[]:
-                    M.append(1)
-                    score+=1
+            if len(game.gridListener.calc_possibilities(player,version))!=0:
+                score+=1
+                break
     for elem in game.piecesPlayer[adversaire]:
-        M=[]
         for version in elem.values():
-            while M==[]:
-                if game.gridListener.calc_possibilities(adversaire,version)!=[]:
-                    M.append(1)
-                    score-=1
+            if game.gridListener.calc_possibilities(adversaire,version)!=[]:
+                score-=1
+                break
     return score
 
-def heuristique_bourrin(game):
+def heuristique_bourrin(game, player):
     score=0
-    adversaire=(game.player+1)%2
-    for elem in game.piecesPlayer[game.player]:
+    adversaire=(player+1)%2
+    for elem in game.piecesPlayer[player]:
         score-=len(elem[1])
     for elem in game.piecesPlayer[adversaire]:
         score+=len(elem[1])
@@ -83,7 +79,7 @@ def minimax(game, heuristique, player, maximisant=True, profondeur=4):
                 for coup in game.gridListener.calc_possibilities(player,version):
                     ng=deepcopy(game)
                     ng.gridListener.place_piece(version,coup,player)
-                    score, _ = minimax(ng, heuristique, adversaire, maximisant =True, profondeur = profondeur - 1)
+                    score, _ = minimax(ng, heuristique, adversaire-, maximisant =True, profondeur = profondeur - 1)
                     if score < pire_score:
                         pire_score = score
                         meilleur_coup = (coup,version,elem)

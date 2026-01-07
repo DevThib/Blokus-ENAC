@@ -1,6 +1,6 @@
 import game as g
 import math
-from copy import copy
+from copy import deepcopy
 
 def heuristique_cases(game):
     L={}
@@ -50,27 +50,27 @@ def heuristique_bourrin(game):
         score+=len(elem[1])
     return score
 
-def minimax(game, heuristique, maximisant=True, profondeur=4):
+def minimax(game, heuristique, player, maximisant=True, profondeur=4):
     i=0
-    for elem in game.piecesPlayer[game.player]:
+    for elem in game.piecesPlayer[player]:
         for version in elem.values():
-            if game.gridListener.calc_possibilities(game.player,version)!=[]:
+            if len(game.gridListener.calc_possibilities(player,version))!=0:
                 i=i+1
                 break
         if i!=0:
             break
     if profondeur == 0 or i == 0:
             return heuristique(game), None
-    adversaire = (game.player+1)%2
+    adversaire = (player+1)%2
     if maximisant:
         meilleur_score = -math.inf
         meilleur_coup = None
-        for elem in game.piecesPlayer[game.player]:
+        for elem in game.piecesPlayer[player]:
             for version in elem.values():
-                for coup in game.gridListener.calc_possibilities(game.player,version):
-                    ng=copy(game)
-                    new_game = ng.gridListener.place_piece(version,coup,game.player)
-                    score, _ = minimax(new_game, adversaire, maximisant =False, profondeur = profondeur - 1)
+                for coup in game.gridListener.calc_possibilities(player,version):
+                    ng=deepcopy(game)
+                    ng.gridListener.place_piece(version,coup,player)
+                    score, _ = minimax(ng, heuristique, adversaire ,maximisant =False, profondeur = profondeur - 1)
                     if score > meilleur_score:
                         meilleur_score = score
                         meilleur_coup = (coup,version,elem)
@@ -78,12 +78,12 @@ def minimax(game, heuristique, maximisant=True, profondeur=4):
     else:
         pire_score = math.inf
         meilleur_coup = None
-        for elem in game.piecesPlayer[adversaire]:
+        for elem in game.piecesPlayer[player]:
             for version in elem.values():
-                for coup in game.gridListener.calc_possibilities(adversaire,version):
-                    ng=copy(game)
-                    new_game = ng.gridListener.place_piece(version,coup,adversaire)
-                    score, _ = minimax(new_game, adversaire, maximisant =True, profondeur = profondeur - 1)
+                for coup in game.gridListener.calc_possibilities(player,version):
+                    ng=deepcopy(game)
+                    ng.gridListener.place_piece(version,coup,player)
+                    score, _ = minimax(ng, heuristique, adversaire-, maximisant =True, profondeur = profondeur - 1)
                     if score < pire_score:
                         pire_score = score
                         meilleur_coup = (coup,version,elem)

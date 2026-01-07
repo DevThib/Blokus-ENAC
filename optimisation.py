@@ -79,7 +79,7 @@ def minimax(game, heuristique, player, maximisant=True, profondeur=4):
                 for coup in game.gridListener.calc_possibilities(player,version):
                     ng=deepcopy(game)
                     ng.gridListener.place_piece(version,coup,player)
-                    score, _ = minimax(ng, heuristique, adversaire-, maximisant =True, profondeur = profondeur - 1)
+                    score, _ = minimax(ng, heuristique, adversaire, maximisant =True, profondeur = profondeur - 1)
                     if score < pire_score:
                         pire_score = score
                         meilleur_coup = (coup,version,elem)

@@ -1,86 +1,148 @@
-import game as g
-import math
 from copy import deepcopy
-
-def heuristique_cases(game, player):
-    L={}
-    N={}
-    adversaire=0 if player==1 else 1
-    for elem in game.piecesPlayer[player]:
+from math import inf
+import new_variations
+def heuristique_cases(player,piecesPlayer,gridListener):
+    L = {}
+    N = {}
+    adversaire = 0 if player == 1 else 1
+    for elem in piecesPlayer[player]:
         for version in elem.values():
-            M=game.gridListener.calc_possibilities(player,version)
+            M = gridListener.calc_possibilities(player, version)
             for e in M:
                 if e not in L:
-                    L[e]=1
-    score=len(L)
-    for elem in game.piecesPlayer[adversaire]:
+                    L[e] = 1
+    score = len(L)
+    for elem in piecesPlayer[adversaire]:
         for version in elem.values():
-            M=game.gridListener.calc_possibilities(adversaire,version)
+            M = gridListener.calc_possibilities(adversaire, version)
             for e in M:
                 if e not in N:
-                    N[e]=1
-    score-=len(N)
+                    N[e] = 1
+    score -= len(N)
     return score
-                
-def heuristique_pieces(game, player):
-    score=0
-    adversaire=(player+1)%2
-    for elem in game.piecesPlayer[player]:
+
+
+def heuristique_pieces(player,piecesPlayer,gridListener):
+    score = 0
+    adversaire = (player + 1) % 2
+    for elem in piecesPlayer[player]:
         for version in elem.values():
-            if len(game.gridListener.calc_possibilities(player,version))!=0:
-                score+=1
+            if len(gridListener.calc_possibilities(player, version)) != 0:
+                score += 1
                 break
-    for elem in game.piecesPlayer[adversaire]:
+    for elem in piecesPlayer[adversaire]:
         for version in elem.values():
-            if game.gridListener.calc_possibilities(adversaire,version)!=[]:
-                score-=1
+            if len(gridListener.calc_possibilities(adversaire, version)) != 0:
+                score -= 1
                 break
     return score
 
-def heuristique_bourrin(game, player):
-    score=0
-    adversaire=(player+1)%2
-    for elem in game.piecesPlayer[player]:
-        score-=len(elem[1])
-    for elem in game.piecesPlayer[adversaire]:
-        score+=len(elem[1])
-    return score
 
-def minimax(game, heuristique, player, maximisant=True, profondeur=4):
+def heuristique_bourrin(player,piecesPlayer,gridListener):
+    score = 0
+
+    adversaire = (player + 1) % 2
+
+    for elem in piecesPlayer[player]:
+        score -= len(elem[1])
+    for elem in piecesPlayer[adversaire]:
+        score += len(elem[1])
+    return score
+def minimax(piecesPlayer,gridListener, heuristique, player, maximisant=True, profondeur=4):
     i=0
-    for elem in game.piecesPlayer[player]:
+    for elem in piecesPlayer[player]:
         for version in elem.values():
-            if len(game.gridListener.calc_possibilities(player,version))!=0:
+            if len(gridListener.calc_possibilities(player,version))!=0:
                 i=i+1
                 break
         if i!=0:
             break
     if profondeur == 0 or i == 0:
-            return heuristique(game), None
+        return heuristique(player,piecesPlayer,gridListener), None
     adversaire = (player+1)%2
     if maximisant:
-        meilleur_score = -math.inf
+        meilleur_score = inf
         meilleur_coup = None
-        for elem in game.piecesPlayer[player]:
+        for elem in piecesPlayer[player]:
             for version in elem.values():
-                for coup in game.gridListener.calc_possibilities(player,version):
-                    ng=deepcopy(game)
-                    ng.gridListener.place_piece(version,coup,player)
-                    score, _ = minimax(ng, heuristique, adversaire ,maximisant =False, profondeur = profondeur - 1)
-                    if score > meilleur_score:
+                for coup in gridListener.calc_possibilities(player,version):
+                    gl = deepcopy(gridListener)
+                    pp = deepcopy(piecesPlayer)
+                    gl.place_piece(version, coup, player)
+                    pp[player].remove(elem)
+                    score, _ = minimax(pp,gl, heuristique, adversaire ,maximisant =False, profondeur = profondeur - 1)
+                    if score < meilleur_score:
                         meilleur_score = score
                         meilleur_coup = (coup,version,elem)
         return meilleur_score, meilleur_coup
     else:
-        pire_score = math.inf
+        pire_score = -inf
         meilleur_coup = None
-        for elem in game.piecesPlayer[player]:
+        for elem in piecesPlayer[player]:
             for version in elem.values():
-                for coup in game.gridListener.calc_possibilities(player,version):
-                    ng=deepcopy(game)
-                    ng.gridListener.place_piece(version,coup,player)
-                    score, _ = minimax(ng, heuristique, adversaire, maximisant =True, profondeur = profondeur - 1)
-                    if score < pire_score:
+                for coup in gridListener.calc_possibilities(player,version):
+                    gl = deepcopy(gridListener)
+                    pp = deepcopy(piecesPlayer)
+                    gl.place_piece(version, coup, player)
+                    pp[player].remove(elem)
+                    score, _ = minimax(pp,gl, heuristique, adversaire, maximisant =True, profondeur = profondeur - 1)
+                    if score > pire_score:
                         pire_score = score
                         meilleur_coup = (coup,version,elem)
         return pire_score, meilleur_coup
+
+def alpha_beta(piecesPlayer,gridListener, heuristique, player, maximisant=True, profondeur=4,alpha = -inf,beta = inf):
+    i=0
+    for elem in piecesPlayer[player]:
+        for version in elem.values():
+            if len(gridListener.calc_possibilities(player,version))!=0:
+                i=i+1
+                break
+        if i!=0:
+            break
+    if profondeur == 0 or i == 0:
+        return heuristique(player,piecesPlayer,gridListener), None
+    adversaire = (player+1)%2
+    if maximisant:
+        meilleur_score = inf
+        meilleur_coup = None
+        for elem in piecesPlayer[player]:
+            for version in elem.values():
+                for coup in gridListener.calc_possibilities(player,version):
+                    gl = deepcopy(gridListener)
+                    pp = deepcopy(piecesPlayer)
+                    gl.place_piece(version, coup, player)
+                    pp[player].remove(elem)
+                    score, _ = alpha_beta(pp,gl, heuristique, adversaire ,maximisant =False, profondeur = profondeur - 1,alpha = alpha,beta = beta)
+                    if score < meilleur_score:
+                        meilleur_score = score
+                        meilleur_coup = (coup,version,elem)
+                    beta = min(beta, score)
+                    if beta <= alpha:
+                        break
+        return meilleur_score, meilleur_coup
+    else:
+        pire_score = -inf
+        meilleur_coup = None
+        for elem in piecesPlayer[player]:
+            for version in elem.values():
+                for coup in gridListener.calc_possibilities(player,version):
+                    gl = deepcopy(gridListener)
+                    pp = deepcopy(piecesPlayer)
+                    gl.place_piece(version, coup, player)
+                    pp[player].remove(elem)
+                    score, _ = alpha_beta(pp,gl, heuristique, adversaire, maximisant =True, profondeur = profondeur - 1,alpha = alpha,beta = beta)
+                    if score > pire_score:
+                        pire_score = score
+                        meilleur_coup = (coup,version,elem)
+                    alpha = max(alpha, score)
+                    if beta <= alpha:
+                        break
+
+        return pire_score, meilleur_coup
+
+"""class MinimaxTester:
+    def __init__(self,grids):
+        self.grids = grids
+        
+    def test(self,player,c):"""

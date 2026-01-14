@@ -9,7 +9,7 @@ from random import randint
 import optimisation as opti
 import variations as v
 
-class GameGraphics(QMainWindow):#Objet qui gère la partie graphique du jeu
+class GameGraphics(QMainWindow):#Objet qui gère la partie interface graphique du jeu
     def __init__(self,game):
         super().__init__()
         self.game = game
@@ -76,7 +76,7 @@ class GameGraphics(QMainWindow):#Objet qui gère la partie graphique du jeu
             if key_text == "v":
                 self.game.selectedPiece.change_version()
 
-    def change_background_color(self,player):
+    def change_background_color(self,player):#change la couleur de fond
         if player == 0:
             self.container.setStyleSheet("""
                 QWidget#bg{
@@ -92,8 +92,8 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
         self.player = 0
         self.pieces = []
         self.selectedPiece = None
-        self.gridListener = v.GridListener(14,14)
-        self.graphics = GameGraphics(self)
+        self.gridListener = v.GridListener(14,14) #Objet qui gère la grille
+        self.graphics = GameGraphics(self) #interface graphique
         self.piecesPlayer = ([p for p in auto.pieces],[p for p in auto.pieces])
         self.bot = bot
 
@@ -105,11 +105,11 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
     def set_selected_piece(self,piece):
         self.selectedPiece = piece
 
-    def remove_piece_for_player(self,player,piece):
+    def remove_piece_for_player(self,player,piece):#retirer la pièce de la liste du joueur et de l'interface
         self.piecesPlayer[player].remove(piece)
         self.get_graphic_piece_by_piece(piece).clickable[self.player] = False
 
-    def change_player(self):
+    def change_player(self):#fonction de changement de joueur,c'est elle qui actualise tout (arrière plan,texte,pièce choisie et possibilités,vérification de victoire)
         self.player = (self.player+1)%2
         self.graphics.change_background_color(self.player)
         self.graphics.player_label.setText(f"Joueur {self.player+1}")
@@ -122,18 +122,18 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
         self.graphics.gridGraphics.show_possibilities(self.gridListener.possibilities[self.player])
         self.check_win((self.player+1)%2)
 
-    def get_graphic_piece_by_piece(self,piece):
+    def get_graphic_piece_by_piece(self,piece):#récupérer une pièce graphique à partir d'un dictinnaire
         for p in self.pieces:
             if p.piece == piece:
                 return p
-    def place_piece(self,pos):
+    def place_piece(self,pos):#fonction de placement d'une pièce,c'est la fonction qui appelle et permet tout le reste (graphique,changement de joueur...)
         if pos in self.gridListener.possibilities[self.player]:
             self.gridListener.place_piece(self.selectedPiece.get_version(),pos,self.player)
             return True
         else:
             return False
 
-    def check_win(self,player):
+    def check_win(self,player):#fonction de vérification de victoire
         if 21-len(self.piecesPlayer[player]) > 5:#on ne cherche pas a vérifier avant le 5ème tour ca sert a rien
             imp = 0
             for piece in self.piecesPlayer[player]:
@@ -168,7 +168,7 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
             self.change_player()
             return
         if typeOfPlay == 1:
-            m = opti.minimax(self.piecesPlayer, self.gridListener, opti.heuristique_bourrin, self.player, True, 2)
+            m = opti.minimax(self.piecesPlayer, self.gridListener, opti.heuristique_basique, self.player, True, 2)
             v = 0
             for e in m[1][2].keys():
                 if m[1][2][e] == m[1][1]:
@@ -196,16 +196,16 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
             self.change_player()
             return
 
-class GraphicPiece:#Objet "pièce graphique",pièces bleuesà droite pour choisir la pièce à jouer
+class GraphicPiece:#Objet "pièce graphique",pièces bleues à droite pour choisir la pièce à jouer
     def __init__(self,piece,game):
-        self.piece = piece
+        self.piece = piece#pièce représentée
         self.game = game
-        self.widget = QWidget()
-        self.grid = QGridLayout()
-        self.version = 0
+        self.widget = QWidget()#widget de la pièce
+        self.grid = QGridLayout()#layout de la pièce
+        self.version = 0#
         self.versions = [t for t in piece.values()]
-        self.rects = []
-        self.clickable = [True,True]
+        self.rects = []#liste des rectangles qui la composent
+        self.clickable = [True,True]#clickable pour l'un ou l'autre joueur
 
         for i in range(5):
             for a in range(5):
@@ -235,7 +235,7 @@ class GraphicPiece:#Objet "pièce graphique",pièces bleuesà droite pour choisi
         self.widget.setCursor(Qt.CursorShape.PointingHandCursor)
         self.grid.setSpacing(0)
 
-    def click(self):
+    def click(self):#fonctione qui sélectionne la pièce quand elle est cliquée
         if self.clickable[self.game.player]:
             self.game.selectedPiece = self
             self.bright()
@@ -244,7 +244,7 @@ class GraphicPiece:#Objet "pièce graphique",pièces bleuesà droite pour choisi
             self.game.graphics.gridGraphics.show_possibilities(self.game.gridListener.possibilities[self.game.player])
             for p in self.game.pieces:
                 if p != self and p.clickable[self.game.player]:p.dark()
-    def show_possibilities(self,bot):
+    def show_possibilities(self,bot):#fonction qui affiche sur la grille les possibilités de placement
         self.game.gridListener.update_possibilities(self.game.player, self.game.selectedPiece.get_version())
         if not bot:
             try:

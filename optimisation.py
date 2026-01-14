@@ -1,6 +1,5 @@
 from copy import deepcopy
 from math import inf
-import new_variations
 def heuristique_cases(player,piecesPlayer,gridListener):
     L = {}
     N = {}
@@ -246,3 +245,4 @@ def alpha_beta_2(piecesPlayer,gridListener, heuristique, player,initial_player, 
         self.grids = grids
         
     def test(self,player,c):"""
+

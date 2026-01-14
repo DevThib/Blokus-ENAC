@@ -8,7 +8,7 @@ from random import randint
 
 import optimisation as opti
 
-import new_variations as v
+import variations as v
 
 import time
 
@@ -343,6 +343,7 @@ class GraphicPiece:
 app = QApplication(sys.argv)
 g = Game(True)
 sys.exit(app.exec_())
+
 
 
 

@@ -1,4 +1,4 @@
-import bibliotheque_pieces as bb
+import pieces_library as bb
 
 def retournement(piece):
     retournement={1:[]}

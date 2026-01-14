@@ -27,16 +27,16 @@ class GridListener:#objet qui gère tous les calculs relatifs à la grille
             for i in range(case[0]-maxs[0]-1,case[0]+maxs[0]+1):#on parcourt les rectangles des dimensions de la pièce,ce sont les seuls endroits ou il peut y avoir des possibilités (voir get_maximums)
                 for a in range(case[1]-maxs[1]-1,case[1]+maxs[1]+1):
                     if(i,a) not in checked:
-                        for c in self.corners(version,(i,a)):#les coins sont les cases la pièce qui concordent avec les oreilles,on ne regarde donc qu'eux
+                        for c in self.corners(version,(i,a)):#les coins sont les cases de la pièce qui concordent avec les oreilles,on ne regarde donc qu'eux
                             if c in self.clickable[player]:
                                 test = True#si ce booléen reste vrai notre case est une possibilité de jeu
                                 for t in self.get_critical_cases(version,(i,a),3):
-                                    if self.grids[2][t[1],t[0]] == 5.0: #cases critiques = obligatoirement libres
+                                    if self.grids[2][t[1],t[0]] == 5.0: #les cases critiques doivent être obligatoirement libres
                                         test = False
                                         break
                                 for t in self.adjacents((i,a),version):
                                     if t[1] >= 5 and t[1] <= 18 and t[0] >= 5 and t[0] <= 18:
-                                        if self.grids[player][t[1], t[0]] == 5.0:#cases adjacentes = il ne faut pas que ce soit une case du joueur (jeu en diagonale)
+                                        if self.grids[player][t[1], t[0]] == 5.0:#les cases adjacentes ne doivent pas être une case du joueur (jeu en diagonale)
                                             test = False
                                             break
                                 if test and (i,a) not in possibilities:

@@ -22,5 +22,6 @@ piece_18={1:[(0,0),(0,1),(1,1),(1,2),(2,2)]}
 piece_19={1:[(0,0),(1,0),(1,1),(1,2),(2,2)]}
 piece_20={1:[(0,0),(1,0),(1,1),(1,2),(2,1)]}
 piece_21={1:[(0,1),(1,0),(1,1),(1,2),(2,1)]}
-pieces=(piece_1,piece_2,piece_3,piece_4,piece_5,piece_6,piece_7,piece_8,piece_9,piece_10,piece_11,piece_12,piece_13,piece_14,piece_15,piece_16,piece_17,piece_18,piece_19,piece_20,piece_21)
+
+
 

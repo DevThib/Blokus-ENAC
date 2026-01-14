@@ -7,21 +7,16 @@ from PyQt5.QtCore import Qt
 from random import randint
 
 import optimisation as opti
-
 import variations as v
 
-import time
-
-from copy import deepcopy
-
-class GameGraphics(QMainWindow):
+class GameGraphics(QMainWindow):#Objet qui gère la partie graphique du jeu
     def __init__(self,game):
         super().__init__()
         self.game = game
 
         self.gridGraphics = Grid(14, 14,game)
 
-        self.container = QWidget(objectName = "test")
+        self.container = QWidget(objectName = "bg")
         mainHbox = QHBoxLayout()
         rightVBox = QVBoxLayout()
         piecesGrid = QGridLayout()
@@ -63,11 +58,9 @@ class GameGraphics(QMainWindow):
         mainHbox.addLayout(rightVBox)
         self.container.setStyleSheet("background-color:rgb(117,117,143);")
         self.container.setStyleSheet("""
-                             QWidget#test{
+                             QWidget#bg{
                                     background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb(87, 199, 133), stop:1 rgb(237, 221, 83));;
                                 }
-                                
-        
         """)
         self.container.show()
         self.setCentralWidget(self.container)
@@ -77,42 +70,24 @@ class GameGraphics(QMainWindow):
         for p in self.game.pieces:
             p.set_visible(p.piece in self.game.piecesPlayer[player])
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event):#événement "appui d'une touche"
         if isinstance(event, QKeyEvent):
             key_text = event.text()
-            if key_text == "z":
+            if key_text == "v":
                 self.game.selectedPiece.change_version()
-            if key_text == "j":
-                self.game.change_player()
-            if key_text == "m":
-                for i in range(1):
-
-                    m = opti.minimax(self.game.piecesPlayer,self.game.gridListener,opti.heuristique_bourrin,0,True,1)
-                    v = 0
-                    for e in m[1][2].keys():
-                        if m[1][2][e] == m[1][1]:
-                            v = e
-                            break
-                    self.game.selectedPiece = self.game.get_graphic_piece_by_piece(m[1][2])
-                    self.game.selectedPiece.version = v
-                    self.game.place_piece(m[1][0])
-
-                    self.game.graphics.gridGraphics.add_piece(m[1][2], v, m[1][0],0)
-                    self.game.change_player()
-                    self.game.bot_play()
 
     def change_background_color(self,player):
         if player == 0:
             self.container.setStyleSheet("""
-                                         QWidget#test{
-                                                background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb(87, 199, 133), stop:1 rgb(237, 221, 83));;
-                                            }""")
+                QWidget#bg{
+                    background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb(87, 199, 133), stop:1 rgb(237, 221, 83));;
+            }""")
         else:
             self.container.setStyleSheet("""
-                                         QWidget#test{
-                                                background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb(255, 129, 0), stop:1 rgb(71, 212, 202));;
-                                            }""")
-class Game:
+                QWidget#bg{
+                    background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb(255, 129, 0), stop:1 rgb(71, 212, 202));;
+                }""")
+class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,vérification de victoire etc...)
     def __init__(self,bot):
         self.player = 0
         self.pieces = []
@@ -173,8 +148,7 @@ class Game:
                 self.graphics.close()
 
     def bot_play(self):
-        print(self.player)
-        typeOfPlay = 2#cette variable (modifiée à la main détermine comment le bot joue (0:random,1:random amélioré,2:minimax)
+        typeOfPlay = 2#cette variable (modifiée à la main) détermine comment le bot joue (0:aléatoire,1:minimax,2:alpha_beta)
         if typeOfPlay == 0 or self.gridListener.first[1]:
             piece = self.piecesPlayer[1][randint(0,len(self.piecesPlayer[1])-1)]
             self.selectedPiece = self.get_graphic_piece_by_piece(piece)
@@ -194,10 +168,7 @@ class Game:
             self.change_player()
             return
         if typeOfPlay == 1:
-            t1 = time.process_time()
             m = opti.minimax(self.piecesPlayer, self.gridListener, opti.heuristique_bourrin, self.player, True, 2)
-            t2 = time.process_time()
-            print(t2-t1)
             v = 0
             for e in m[1][2].keys():
                 if m[1][2][e] == m[1][1]:
@@ -211,10 +182,7 @@ class Game:
             self.change_player()
             return
         if typeOfPlay == 2:
-            t1 = time.process_time()
-            m = opti.alpha_beta_2(self.piecesPlayer, self.gridListener, opti.heuristique_pieces, self.player,self.player ,True, 1)
-            t2 = time.process_time()
-            print(t2-t1)
+            m = opti.alpha_beta(self.piecesPlayer, self.gridListener, opti.heuristique_pieces, self.player,self.player ,True, 1)
             v = 0
             for e in m[1][2].keys():
                 if m[1][2][e] == m[1][1]:
@@ -228,7 +196,7 @@ class Game:
             self.change_player()
             return
 
-class GraphicPiece:
+class GraphicPiece:#Objet "pièce graphique",pièces bleuesà droite pour choisir la pièce à jouer
     def __init__(self,piece,game):
         self.piece = piece
         self.game = game
@@ -245,18 +213,17 @@ class GraphicPiece:
                 rect.setFixedSize(15, 15)
                 if (i, a) in self.versions[self.version]:
                     rect.setStyleSheet("""
-                                                         QPushButton{
-                                                             border: 1px solid rgb(0,0,100);
-                                                             background-color:blue;
-                                                         }
-                                                         
+                        QPushButton{
+                            border: 1px solid rgb(0,0,100);
+                            background-color:blue;
+                        }                      
                                          """)
                     self.rects.append((rect, True))
                 else:
                     rect.setStyleSheet("""
-                                                         QPushButton{
-                                                             background-color:transparent;
-                                                         }
+                        QPushButton{
+                            background-color:transparent;
+                        }
                                          """)
                     self.rects.append((rect, False))
 
@@ -283,43 +250,42 @@ class GraphicPiece:
             try:
                 for p in self.game.gridListener.possibilities[self.game.player]:
                     self.game.graphics.gridGraphics.dark_border_case(p)
-            except AttributeError:
-                pass
+            except AttributeError:pass
 
-    def bright(self):
+    def bright(self):#fonction qui met la pièce en orange
         for r in self.rects:
             if r[1]:r[0].setStyleSheet("""
-                                                                     QPushButton{
-                                                                         border: 1px solid rgb(225,131,0);
-                                                                         background-color:rgb(255,151,0);
-                                                                     }
-                                                     """)
-    def dark(self):
+                    QPushButton{
+                        border: 1px solid rgb(225,131,0);
+                        background-color:rgb(255,151,0);
+                    }
+                                        """)
+    def dark(self):#fonction qui met la pièce en bleu
         for r in self.rects:
             if r[1]:r[0].setStyleSheet("""
-                                                                     QPushButton{
-                                                                         border: 1px solid rgb(0,0,100);
-                                                                         background-color:blue;
-                                                                     }
-                                                     """)
-    def change_version(self):
+                    QPushButton{
+                        border: 1px solid rgb(0,0,100);
+                        background-color:blue;
+                    }
+                                      """)
+    def change_version(self):#fonction qui change la version de la pièce,appelée quand on apuie sur "v"
         self.version = (self.version+1)%len(self.versions)
         for i in range(5):
             for a in range(5):
                 index = 5 * i + a
                 if (i, a) in self.versions[self.version]:
                     self.rects[index][0].setStyleSheet("""
-                                                         QPushButton{
-                                                            border: 1px solid rgb(225,131,0);
-                                                            background-color:rgb(255,151,0);
-                                                         }
+                         QPushButton{
+                            border: 1px solid rgb(225,131,0);
+                            background-color:rgb(255,151,0);
+                         }
                                                         """)
                     self.rects[index] = (self.rects[index][0],True)
                 else:
                     self.rects[index][0].setStyleSheet("""
-                                                         QPushButton{
-                                                             background-color:transparent;
-                                                         }
+                         QPushButton{
+                            background-color:transparent;
+                         }
                                                         """)
                     self.rects[index] = (self.rects[index][0],False)
         self.game.graphics.gridGraphics.clean_possibilities()
@@ -330,10 +296,10 @@ class GraphicPiece:
         if not visible:
             for r in self.rects:
                 r[0].setStyleSheet("""
-                                                                         QPushButton{
-                                                                             background-color:transparent;
-                                                                         }
-                                                         """)
+                    QPushButton{
+                        background-color:transparent;
+                    }
+                                   """)
         elif self.game.selectedPiece != self:
             self.dark()
 
@@ -341,9 +307,8 @@ class GraphicPiece:
         return self.piece[self.version+1]
 
 app = QApplication(sys.argv)
-g = Game(True)
+g = Game(False)
 sys.exit(app.exec_())
-
 
 
 

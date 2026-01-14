@@ -1,6 +1,4 @@
-import numpy as np
 from PyQt5.QtWidgets import  QWidget, QPushButton,QGridLayout
-import sys
 from PyQt5.QtCore import Qt
 
 class Grid:
@@ -134,4 +132,5 @@ class Case:
                     border: 1px solid rgb(90,0,0);
                     background-color:rgb(140,0,0);
                 }
+
                                      """)

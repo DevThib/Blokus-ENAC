@@ -61,11 +61,11 @@ class Case:
                 self.setFixedSize(int(700/case.grid.width), int(700/case.grid.height))
                 self.setCursor(Qt.CursorShape.PointingHandCursor)
                 self.setStyleSheet("""
-                                                  QPushButton {
-                                                      background-color: rgb(150,150,150);
-                                                      border:2.5px solid rgb(100,100,100);
-                                                  }                                    
-                                                         """)
+                    QPushButton {
+                        background-color: rgb(150,150,150);
+                        border:2.5px solid rgb(100,100,100);
+                    }                                    
+                                    """)
 
                 self.case = case
             def enterEvent(self, a0):#lorsque la souris entre,nous surlignons en orange les cases correspondant à la pièce (prévisualisation d'un éventuel placement)
@@ -75,12 +75,12 @@ class Case:
                         cb = self.case.grid.cases[(pos[0]+c[0])*self.case.grid.width+pos[1]+c[1]]
                         if cb.clickable:
                             cb.button.setStyleSheet("""
-                                                                              QPushButton {
-                                                                                  background-color: rgb(150,150,150);
-                                                                                  border:2.5px solid orange;
-                                                                              }
+                                QPushButton {
+                                    background-color: rgb(150,150,150);
+                                    border:2.5px solid orange;
+                                }
                                                                     
-                                                                                     """)
+                                                    """)
             def leaveEvent(self, a0):#lorsque la souris sort,nous retirons ce surlignage en orange
                 pos = (self.case.x,self.case.y)
                 for c in self.case.grid.game.selectedPiece.get_version():
@@ -93,22 +93,22 @@ class Case:
             def darken_border(self):#mise de la bordure en noir
                 if self.case.clickable:
                     self.setStyleSheet("""
-                                                QPushButton {
-                                                background-color: rgb(150,150,150);
-                                                border:2.5px solid black;
-                                                }
+                        QPushButton {
+                            background-color: rgb(150,150,150);
+                            border:2.5px solid black;
+                        }
     
-                                                                                                             """)
+                                    """)
 
             def greyen_border(self):#mise de la bourdure en gris
                 if self.case.clickable:
                     self.setStyleSheet("""
-                                                QPushButton {
-                                                background-color: rgb(150,150,150);
-                                                border:2.5px solid rgb(100,100,100);
-                                                }
+                        QPushButton {
+                            background-color: rgb(150,150,150);
+                            border:2.5px solid rgb(100,100,100);
+                        }
 
-                                                                                                             """)
+                                """)
 
         return CaseButton(self)
 
@@ -122,16 +122,16 @@ class Case:
         if player == 0:
             self.button.setCursor(Qt.CursorShape.ArrowCursor)
             self.button.setStyleSheet("""
-                                                      QPushButton {
-                                                          border: 1px solid rgb(0,90,0);
-                                                          background-color:rgb(0,140,0);
-                                                      }
-                                                             """)
+                QPushButton {
+                    border: 1px solid rgb(0,90,0);
+                    background-color:rgb(0,140,0);
+                }
+                                     """)
         else:
             self.button.setCursor(Qt.CursorShape.ArrowCursor)
             self.button.setStyleSheet("""
-                                                                  QPushButton {
-                                                                      border: 1px solid rgb(90,0,0);
-                                                                      background-color:rgb(140,0,0);
-                                                                  }
-                                                                         """)
+                QPushButton {
+                    border: 1px solid rgb(90,0,0);
+                    background-color:rgb(140,0,0);
+                }
+                                     """)

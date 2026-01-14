@@ -173,6 +173,7 @@ class Game:
                 self.graphics.close()
 
     def bot_play(self):
+        print(self.player)
         typeOfPlay = 2#cette variable (modifiée à la main détermine comment le bot joue (0:random,1:random amélioré,2:minimax)
         if typeOfPlay == 0 or self.gridListener.first[1]:
             piece = self.piecesPlayer[1][randint(0,len(self.piecesPlayer[1])-1)]
@@ -211,7 +212,7 @@ class Game:
             return
         if typeOfPlay == 2:
             t1 = time.process_time()
-            m = opti.alpha_beta(self.piecesPlayer, self.gridListener, opti.heuristique_bourrin, self.player, True, 2)
+            m = opti.alpha_beta_2(self.piecesPlayer, self.gridListener, opti.heuristique_pieces, self.player,self.player ,True, 1)
             t2 = time.process_time()
             print(t2-t1)
             v = 0

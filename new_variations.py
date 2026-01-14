@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import numpy as np
 
 class GridListener:
@@ -6,7 +8,7 @@ class GridListener:
         self.grids = [self.init_new_grid(width+10,height+10),self.init_new_grid(width+10,height+10),self.init_new_grid(width+10,height+10)]
         self.clickable = [[],[]]
         self.first = [True,True]
-        self.possibilities = [[(5,5)],[(10,10)]]
+        self.possibilities = [[(4,4)],[(9,9)]]
         self.width = width
         self.height = height
 
@@ -21,25 +23,55 @@ class GridListener:
     def calc_possibilities(self,player,version):
         possibilities = []
         maxs = self.get_maximums(version)
+        checked = []
         for case in self.clickable[player]:
             for i in range(case[0]-maxs[0]-1,case[0]+maxs[0]+1):
                 for a in range(case[1]-maxs[1]-1,case[1]+maxs[1]+1):
-                    for c in self.corners(version,(i,a)):
-                        if c in self.clickable[player]:
-                            test = True
-                            for t in self.get_critical_cases(version,(i,a),3):
-                                if self.grids[2][t[1],t[0]] == 5.0: #cases critiques = obligatoirement libres
-                                    test = False
-                                    break
-                            for t in self.adjacents((i,a),version):
-                                if t[1] >= 5 and t[1] <= 18 and t[0] >= 5 and t[0] <= 18:
-                                    if self.grids[player][t[1], t[0]] == 5.0:#cases adjacentes = il ne faut pas que ce soit une case du joueur
+                    if(i,a) not in checked:
+                        for c in self.corners(version,(i,a)):
+                            if c in self.clickable[player]:
+                                test = True
+                                for t in self.get_critical_cases(version,(i,a),3):
+                                    if self.grids[2][t[1],t[0]] == 5.0: #cases critiques = obligatoirement libres
                                         test = False
                                         break
-                            if test and (i,a) not in possibilities:
-                                possibilities.append((i-5,a-5))#-5 pour qu'elle s'adapte a la grille affichée
+                                for t in self.adjacents((i,a),version):
+                                    if t[1] >= 5 and t[1] <= 18 and t[0] >= 5 and t[0] <= 18:
+                                        if self.grids[player][t[1], t[0]] == 5.0:#cases adjacentes = il ne faut pas que ce soit une case du joueur
+                                            test = False
+                                            break
+                                if test and (i,a) not in possibilities:
+                                    possibilities.append((i-5,a-5))#-5 pour qu'elle s'adapte a la grille affichée
+                                checked.append((i,a))
         return possibilities
 
+    def has_possibilities(self,player,version):#renvoie un booléen : "y'a t-il une possibilité,elle s'arrête dès qu'on en a trouvé une
+        possibility = False
+        maxs = self.get_maximums(version)
+        checked = []
+        for case in self.clickable[player]:
+            for i in range(case[0] - maxs[0] - 1, case[0] + maxs[0] + 1):
+                for a in range(case[1] - maxs[1] - 1, case[1] + maxs[1] + 1):
+                    if (i, a) not in checked:
+                        for c in self.corners(version, (i, a)):
+                            if c in self.clickable[player]:
+                                test = True
+                                for t in self.get_critical_cases(version, (i, a), 3):
+                                    if self.grids[2][t[1], t[0]] == 5.0:  # cases critiques = obligatoirement libres
+                                        test = False
+                                        break
+                                for t in self.adjacents((i, a), version):
+                                    if t[1] >= 5 and t[1] <= 18 and t[0] >= 5 and t[0] <= 18:
+                                        if self.grids[player][t[1], t[0]] == 5.0:  # cases adjacentes = il ne faut pas que ce soit une case du joueur
+                                            test = False
+                                            break
+                                if test:
+                                    possibility = True
+                                    break
+                        if possibility: break
+                if possibility: break#CA PLANTE
+            if possibility: break
+        return possibility
     def update_possibilities(self,player,version):
         if not self.first[player]:
             self.possibilities[player] = self.calc_possibilities(player, version)
@@ -69,6 +101,20 @@ class GridListener:
                 self.grids[player][e[0][1],e[0][0]] = e[1]
                 self.clickable[player].append(e[0])
         if self.first[player]:self.first[player] = False
+
+    def remove_piece(self,version,pos,player):
+        #A n'utiliser que pour cancel un "place_piece"
+        real_pos = self.convert_pos(pos)
+
+        if real_pos not in self.clickable[player]: self.clickable[player].append(real_pos)
+        for t in version:
+            self.grids[player][real_pos[1] + t[1], real_pos[0] + t[0]] = 0
+            self.grids[2][real_pos[1] + t[1], real_pos[0] + t[0]] = 0
+        for e in self.ears(version, real_pos):
+            if self.grids[player][e[0][1], e[0][0]] != 5.0:
+                self.grids[player][e[0][1], e[0][0]] = 0
+                self.clickable[player].remove(e[0])
+        if self.first[player]: self.first[player] = False
 
     def convert_pos(self,pos):
         #change la position pour l'adapater a la grille 20*20 au lieu de 14*14
@@ -126,7 +172,6 @@ class GridListener:
 
     def adjacents(self,case,version):
         #renvoie les case adjacentes à toutes les cases d'une version
-        #PROBLEMES : certaines ne sont pas bonnes,on peut placer a coté de cases adjacentes
         adj = []
         for t in version:
             if (case[0]+t[0]-1,case[1]+t[1]) not in adj:adj.append((case[0]+t[0]-1,case[1]+t[1]))
@@ -139,64 +184,3 @@ class GridListener:
 #1:NO,2:NE,4:SE,3:SO
 #direction complémentaire en diagonale ont une somme de 5 (au final je m'e suis pas servi)
 
-
-"""
-
-#self.possibilities(0, [(0, 0), (1, 1), (0, 1), (1, 0)])
-        print(self.grids[0])
-        print(self.clickable[0])
-        print(self.corners([(1,1),(1,0),(0,1),(2,1),(1,2)],(11,11)))
-        print(self.possibilities(0,[(0,0),(1,0),(0,1),(0,2)]))
-        test = self.init_new_grid(grid.width+10,grid.height+10)
-        test[10,10] = 5
-        for p in self.possibilities(0,[(0,0),(1,0),(0,1),(0,2),(0,3)]):
-            test[p[1],p[0]] = 6
-        print(test)
-
-
-
- for i in range(len(version)):
-                #obliger d'inverser la case car elle est au format (x,y) ce qui est l'inverse du (ligne colonne)
-                case_checked = (case[1]+self.multiplier(direction)[0]*version[i][1],case[0]+self.multiplier(direction)[1]*version[i][0])
-                if self.grids[2][case_checked] != 0:
-                    ok = False
-                    print("b : check"+str(case_checked)+" case"+str(case))
-                    break
-                else:
-                    print(case_checked[1],case_checked[0])
-            if ok:possibilities.append((case[1]+self.multiplier(direction)[0]*version[-1][0],case[1]+self.multiplier(direction)[1]*version[-1][1]))
-       
-
-
-  def possibilities(self,player,version):
-        possibilities = []
-        for case in self.clickable[player]:
-            print(case)
-            ok = True
-            direction = self.grids[player][case[1],case[0]]
-            extremums = self.get_maximums(version)
-            criticals = self.get_critical_cases(version,case,direction)
-            for x in range(extremums[0]+1):
-                for y in range(extremums[1]+1):
-                    case_checked = (case[1] + self.multiplier(direction)[0] * y,case[0] + self.multiplier(direction)[1] * x)
-                    if (case_checked[1],case_checked[0]) in criticals:
-                        if self.grids[2][case_checked] != 0:
-                            ok = False
-                            break
-                if not ok:break
-            #remonter et à gauche = on doit placer aux extrêmes
-            if ok:
-                if direction == 1:
-                    possibilities.append((case[0]+ self.multiplier(direction)[0] * extremums[0],case[1]+ self.multiplier(direction)[1] * extremums[1]))
-                if direction == 2:
-                    possibilities.append((case[0],case[1] + self.multiplier(direction)[1] * extremums[1]))
-                if direction == 3:
-                    possibilities.append(case)
-                if direction == 4:
-                    possibilities.append((case[0] + self.multiplier(direction)[0] * extremums[0],case[1]))
-
-        return possibilities
-
-
-
-"""

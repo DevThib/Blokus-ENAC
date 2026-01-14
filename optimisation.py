@@ -27,12 +27,12 @@ def heuristique_pieces(player,piecesPlayer,gridListener):
     adversaire = (player + 1) % 2
     for elem in piecesPlayer[player]:
         for version in elem.values():
-            if len(gridListener.calc_possibilities(player, version)) != 0:
+            if gridListener.has_possibilities(player, version):
                 score += 1
                 break
     for elem in piecesPlayer[adversaire]:
         for version in elem.values():
-            if len(gridListener.calc_possibilities(adversaire, version)) != 0:
+            if gridListener.has_possibilities(player, version):
                 score -= 1
                 break
     return score
@@ -139,6 +139,106 @@ def alpha_beta(piecesPlayer,gridListener, heuristique, player, maximisant=True, 
                     if beta <= alpha:
                         break
 
+        return pire_score, meilleur_coup
+
+def minimax_2(piecesPlayer,gridListener, heuristique, player, initial_player,maximisant=True, profondeur=4):
+    i = 0
+    for elem in piecesPlayer[player]:
+        for version in elem.values():
+            if len(gridListener.calc_possibilities(player, version)) != 0:
+                i = i + 1
+                break
+        if i != 0:
+            break
+    if profondeur == 0 or i == 0:
+        return heuristique(initial_player,piecesPlayer,gridListener), None
+    adversaire = (player+1)%2
+    if maximisant:
+        meilleur_score = -inf
+        meilleur_coup = None
+        for elem in piecesPlayer[player]:
+            for version in elem.values():
+                for coup in gridListener.calc_possibilities(player, version):
+                    gl = deepcopy(gridListener)
+                    pp = deepcopy(piecesPlayer)
+                    gl.place_piece(version, coup, player)
+                    pp[player].remove(elem)
+                    score, _ = minimax_2(pp,gl, heuristique, adversaire, maximisant=False, profondeur=profondeur - 1,initial_player=initial_player)
+                    if score > meilleur_score:
+                        meilleur_score = score
+                        meilleur_coup = (coup,version,elem)
+        return meilleur_score, meilleur_coup
+    else:
+        pire_score = inf
+        meilleur_coup = None
+        for elem in piecesPlayer[player]:
+            for version in elem.values():
+                for coup in gridListener.calc_possibilities(player, version):
+                    gl = deepcopy(gridListener)
+                    pp = deepcopy(piecesPlayer)
+                    gl.place_piece(version, coup, player)
+                    pp[player].remove(elem)
+                    score, _ = minimax_2(pp,gl, heuristique, player, maximisant=True, profondeur=profondeur - 1,initial_player=initial_player)
+                    if score < pire_score:
+                        pire_score = score
+                        meilleur_coup = (coup,version,elem)
+        return pire_score, meilleur_coup
+
+def alpha_beta_2(piecesPlayer,gridListener, heuristique, player,initial_player, maximisant=True, profondeur=4,alpha=-inf,beta=inf):
+    i = 0
+    for elem in piecesPlayer[player]:
+        for version in elem.values():
+            if len(gridListener.calc_possibilities(player, version)) != 0:
+                i = i + 1
+                break
+        if i != 0:
+            break
+    if profondeur == 0 or i == 0:
+        return heuristique(initial_player,piecesPlayer,gridListener), None
+    adversaire = (player+1)%2
+    if maximisant:
+        meilleur_score = -inf
+        meilleur_coup = None
+        flag = False
+        for elem in piecesPlayer[player]:
+            for version in elem.values():
+                for coup in gridListener.calc_possibilities(player, version):
+                    gl = deepcopy(gridListener)
+                    pp = deepcopy(piecesPlayer)
+                    gl.place_piece(version, coup, player)
+                    pp[player].remove(elem)
+                    score, _ = alpha_beta_2(pp,gl, heuristique, adversaire,initial_player=initial_player, maximisant=False, profondeur=profondeur - 1,alpha=alpha,beta=beta)
+                    if score > meilleur_score:
+                        meilleur_score = score
+                        meilleur_coup = (coup,version,elem)
+                    alpha = max(alpha, score)
+                    if beta <= alpha:
+                        flag = True
+                        break
+                if flag:break
+            if flag:break
+        return meilleur_score, meilleur_coup
+    else:
+        pire_score = inf
+        meilleur_coup = None
+        flag = False
+        for elem in piecesPlayer[player]:
+            for version in elem.values():
+                for coup in gridListener.calc_possibilities(player, version):
+                    gl = deepcopy(gridListener)
+                    pp = deepcopy(piecesPlayer)
+                    gl.place_piece(version, coup, player)
+                    pp[player].remove(elem)
+                    score, _ = alpha_beta_2(pp,gl, heuristique, player,initial_player=initial_player, maximisant=True, profondeur=profondeur - 1,alpha=alpha,beta=beta)
+                    if score < pire_score:
+                        pire_score = score
+                        meilleur_coup = (coup,version,elem)
+                    beta = min(beta, score)
+                    if beta <= alpha:
+                        flag = True
+                        break
+                if flag:break
+            if flag:break
         return pire_score, meilleur_coup
 
 """class MinimaxTester:

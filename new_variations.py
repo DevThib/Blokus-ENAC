@@ -69,7 +69,7 @@ class GridListener:
                                     possibility = True
                                     break
                         if possibility: break
-                if possibility: break#CA PLANTE
+                if possibility: break
             if possibility: break
         return possibility
     def update_possibilities(self,player,version):
@@ -183,4 +183,5 @@ class GridListener:
 #0:vide,-1:occupée,
 #1:NO,2:NE,4:SE,3:SO
 #direction complémentaire en diagonale ont une somme de 5 (au final je m'e suis pas servi)
+
 

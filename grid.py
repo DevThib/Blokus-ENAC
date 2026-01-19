@@ -41,7 +41,7 @@ class Grid:
                 c.button.greyen_border()
     def show_possibilities(self,possibilities_list):#affichage des possibilités de jeu
         for c in possibilities_list:
-            self.cases[c[0]*14+c[1]].button.darken_border()
+            self.cases[c[0]*self.height+c[1]].button.darken_border()
 
 class Case:
     def __init__(self,x,y,grid):
@@ -56,7 +56,8 @@ class Case:
             def __init__(self,case):
                 super().__init__()
                 self.clicked.connect(case.on_clicked)
-                self.setFixedSize(int(700/case.grid.width), int(700/case.grid.height))
+                GRID_SIZE = 700#700 pixels:taille de la grille
+                self.setFixedSize(int(GRID_SIZE/case.grid.width), int(GRID_SIZE/case.grid.height))
                 self.setCursor(Qt.CursorShape.PointingHandCursor)
                 self.setStyleSheet("""
                     QPushButton {
@@ -76,8 +77,7 @@ class Case:
                                 QPushButton {
                                     background-color: rgb(150,150,150);
                                     border:2.5px solid orange;
-                                }
-                                                                    
+                                }                           
                                                     """)
             def leaveEvent(self, a0):#lorsque la souris sort,nous retirons ce surlignage en orange
                 pos = (self.case.x,self.case.y)
@@ -95,7 +95,6 @@ class Case:
                             background-color: rgb(150,150,150);
                             border:2.5px solid black;
                         }
-    
                                     """)
 
             def greyen_border(self):#mise de la bourdure en gris
@@ -105,7 +104,6 @@ class Case:
                             background-color: rgb(150,150,150);
                             border:2.5px solid rgb(100,100,100);
                         }
-
                                 """)
 
         return CaseButton(self)
@@ -132,5 +130,4 @@ class Case:
                     border: 1px solid rgb(90,0,0);
                     background-color:rgb(140,0,0);
                 }
-
                                      """)

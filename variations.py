@@ -7,7 +7,7 @@ class GridListener:#objet qui gère tous les calculs relatifs à la grille
                                                                                                                                            # et une "globale" qui ne contient que des 0 et 5 et représente les cases occupées sans distinction de joueur
         self.clickable = [[],[]]
         self.first = [True,True]
-        self.possibilities = [[(4,4)],[(9,9)]]
+        self.possibilities = [[(int(4*width/13),int(4*height/13))],[(int(9*width/13),int(9*height/13))]]
         self.width = width
         self.height = height
 
@@ -26,7 +26,7 @@ class GridListener:#objet qui gère tous les calculs relatifs à la grille
         for case in self.clickable[player]:
             for i in range(case[0]-maxs[0]-1,case[0]+maxs[0]+1):#on parcourt les rectangles des dimensions de la pièce,ce sont les seuls endroits ou il peut y avoir des possibilités (voir get_maximums)
                 for a in range(case[1]-maxs[1]-1,case[1]+maxs[1]+1):
-                    if(i,a) not in checked:
+                    if (i,a) not in checked:
                         for c in self.corners(version,(i,a)):#les coins sont les cases de la pièce qui concordent avec les oreilles,on ne regarde donc qu'eux
                             if c in self.clickable[player]:
                                 test = True#si ce booléen reste vrai notre case est une possibilité de jeu
@@ -35,7 +35,7 @@ class GridListener:#objet qui gère tous les calculs relatifs à la grille
                                         test = False
                                         break
                                 for t in self.adjacents((i,a),version):
-                                    if t[1] >= 5 and t[1] <= 18 and t[0] >= 5 and t[0] <= 18:
+                                    if t[1] >= 5 and t[1] <= self.width+4 and t[0] >= 5 and t[0] <= self.height+4:
                                         if self.grids[player][t[1], t[0]] == 5.0:#les cases adjacentes ne doivent pas être une case du joueur (jeu en diagonale)
                                             test = False
                                             break
@@ -60,7 +60,7 @@ class GridListener:#objet qui gère tous les calculs relatifs à la grille
                                         test = False
                                         break
                                 for t in self.adjacents((i, a), version):
-                                    if t[1] >= 5 and t[1] <= 18 and t[0] >= 5 and t[0] <= 18:
+                                    if t[1] >= 5 and t[1] <= self.width+4 and t[0] >= 5 and t[0] <= self.height+4:#les bords ne doivent pas être considérés comme des cases adjacentes
                                         if self.grids[player][t[1], t[0]] == 5.0:  # cases adjacentes = il ne faut pas que ce soit une case du joueur
                                             test = False
                                             break
@@ -68,7 +68,7 @@ class GridListener:#objet qui gère tous les calculs relatifs à la grille
                                     possibility = True
                                     break
                         if possibility: break
-                if possibility: break#CA PLANTE
+                if possibility: break
             if possibility: break
         return possibility
     def update_possibilities(self,player,version):#mise à jour des possibilités
@@ -163,4 +163,3 @@ class GridListener:#objet qui gère tous les calculs relatifs à la grille
 
 #0:vide,5:occupée,
 #1:NO,2:NE,4:SE,3:SO
-

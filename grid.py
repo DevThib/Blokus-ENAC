@@ -113,7 +113,7 @@ class Case:
             self.grid.add_piece(self.grid.game.selectedPiece.piece, self.grid.game.selectedPiece.version + 1,(self.x, self.y), self.grid.game.player)
             self.grid.game.change_player()
             if self.grid.game.bot:
-                self.grid.game.bot_play()
+                self.grid.game.bot_play(self.grid.game.graphics.bot)
     def change_color(self,player):#fonction qui met la case en vert ou rouge quand un joueur a joué
         if player == 0:
             self.button.setCursor(Qt.CursorShape.ArrowCursor)

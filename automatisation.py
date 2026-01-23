@@ -61,7 +61,12 @@ def versions(piece):
     for k in range(1,9):
         if piece[k]==[]:
             del piece[k]
-    return piece
+    new_piece = {}#réaffectation des clés pour palier à une erreur d'affectation
+    i = 1
+    for k in piece.keys():
+        new_piece[i] = piece[k]
+        i += 1
+    return new_piece
 
 pieces=[versions(bb.piece_1),versions(bb.piece_2),versions(bb.piece_3),versions(bb.piece_4),versions(bb.piece_5),versions(bb.piece_6),versions(bb.piece_7),versions(bb.piece_8),versions(bb.piece_9),versions(bb.piece_10),versions(bb.piece_11),versions(bb.piece_12),versions(bb.piece_13),versions(bb.piece_14),versions(bb.piece_15),versions(bb.piece_16),versions(bb.piece_17),versions(bb.piece_18),versions(bb.piece_19),versions(bb.piece_20),versions(bb.piece_21)]
 

@@ -1,5 +1,3 @@
-import time
-
 from grid import Grid
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout,QLabel,QGridLayout,QMainWindow
 from PyQt5.QtGui import QFont, QKeyEvent
@@ -125,7 +123,7 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
         self.player = 0#Joueur 0:premier joueur,joueur 1:deuxième joueur
         self.pieces = []
         self.selectedPiece = None
-        self.gridListener = v.GridListener(WIDTH,HEIGHT) #Objet qui gère la grille
+        self.gridManager = v.GridManager(WIDTH, HEIGHT) #Objet qui gère la grille
         self.graphics = GameGraphics(self) #interface graphique
         self.piecesPlayer = ([p for p in auto.pieces],[p for p in auto.pieces])
         self.bot = bot
@@ -152,16 +150,16 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
             self.selectedPiece = self.get_graphic_piece_by_piece(self.piecesPlayer[self.player][0])#si la pièce sélectionnée précdemment n'est pas disponible,on en sélectionne une autre
         self.selectedPiece.bright()
         self.graphics.gridGraphics.clean_possibilities()
-        self.gridListener.update_possibilities(self.player,self.selectedPiece.get_version())#mise à jour les cases de possibilités
-        self.graphics.gridGraphics.show_possibilities(self.gridListener.possibilities[self.player])
+        self.gridManager.update_possibilities(self.player, self.selectedPiece.get_version())#mise à jour les cases de possibilités
+        self.graphics.gridGraphics.show_possibilities(self.gridManager.possibilities[self.player])
 
     def get_graphic_piece_by_piece(self,piece):#récupérer une pièce graphique à partir d'un dictinnaire
         for p in self.pieces:
             if p.piece == piece:
                 return p
     def place_piece(self,pos):#fonction de placement d'une pièce,c'est la fonction qui appelle et permet tout le reste (graphique,changement de joueur...)
-        if pos in self.gridListener.possibilities[self.player]:
-            self.gridListener.place_piece(self.selectedPiece.get_version(),pos,self.player)
+        if pos in self.gridManager.possibilities[self.player]:
+            self.gridManager.place_piece(self.selectedPiece.get_version(), pos, self.player)
             return True
         else:
             return False
@@ -171,27 +169,26 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
         impossible = True
         for piece in self.piecesPlayer[player]:
             for v in piece.values():
-                if self.gridListener.has_possibilities(player, v):#dès qu'une possibilité de jeu à été trouvée,le joueur n'a pas perdu
+                if self.gridManager.has_possibilities(player, v):#dès qu'une possibilité de jeu à été trouvée,le joueur n'a pas perdu
                     impossible = False
                     break
             if not impossible:break
-        if impossible and not self.gridListener.first[player]:#si aucune n'est trouvée,l'adversaire à gagné
+        if impossible and not self.gridManager.first[player]:#si aucune n'est trouvée,l'adversaire à gagné
             print(f"Joueur {(player + 1) % 2} a gagné !!")
             self.graphics.close()
             return
 
-
     def bot_play(self,type):
-        if self.gridListener.first[self.player]:
-            piece = self.piecesPlayer[self.player][randint(0, len(self.piecesPlayer[self.player]) - 1)]
+        if self.gridManager.first[self.player]:
+            piece = self.piecesPlayer[self.player][randint(0, int((len(self.piecesPlayer[self.player]) - 1)/2))]#une pièce aléatoire parmis les premières est placée
             kk = []
             for k in piece.keys():
                 kk.append(k)
             v = kk[randint(0,len(piece.keys())-1)]
             self.selectedPiece = self.get_graphic_piece_by_piece(piece)
             self.selectedPiece.version = v-1
-            self.place_piece(self.gridListener.possibilities[self.player][0])
-            self.graphics.gridGraphics.add_piece(piece, v, self.gridListener.possibilities[self.player][0], self.player)
+            self.place_piece(self.gridManager.possibilities[self.player][0])
+            self.graphics.gridGraphics.add_piece(piece, v, self.gridManager.possibilities[self.player][0], self.player)
             self.change_player()
             self.selectedPiece.change_version(False)
             return
@@ -199,7 +196,7 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
             versions = []
             for p in self.piecesPlayer[self.player]:
                 for v in p.keys():
-                    if self.gridListener.has_possibilities(self.player,p[v]):versions.append((v,p))
+                    if self.gridManager.has_possibilities(self.player, p[v]):versions.append((v, p))
             if len(versions) == 0:
                 print(f"Joueur {(self.player + 1) % 2} a gagné !!")
                 self.graphics.close()
@@ -207,13 +204,13 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
             r = randint(0,len(versions)-1)#on sélectionne une version aléatoire parmis celles jouables
             self.selectedPiece = self.get_graphic_piece_by_piece(versions[r][1])
             self.selectedPiece.version = versions[r][0]-1
-            self.gridListener.update_possibilities(self.player, versions[r][1][versions[r][0]])
-            poss = self.gridListener.calc_possibilities(self.player,versions[r][1][versions[r][0]])
+            self.gridManager.update_possibilities(self.player, versions[r][1][versions[r][0]])
+            poss = self.gridManager.calc_possibilities(self.player, versions[r][1][versions[r][0]])
             case = poss[randint(0,len(poss)-1)]
             self.place_piece(case)
             self.graphics.gridGraphics.add_piece(versions[r][1],versions[r][0], case,self.player)
         if type == 1:
-            m = opti.minimax(self.piecesPlayer, self.gridListener, HEURISTIQUE, self.player,self.player ,True, DEPTH)
+            m = opti.minimax(self.piecesPlayer, self.gridManager, HEURISTIQUE, self.player, self.player, True, DEPTH)
             v = 0
             for e in m[1][2].keys():
                 if m[1][2][e] == m[1][1]:
@@ -221,12 +218,12 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
                     break
             self.selectedPiece = self.get_graphic_piece_by_piece(m[1][2])
             self.selectedPiece.version = v-1
-            self.gridListener.update_possibilities(self.player, self.selectedPiece.get_version())
+            self.gridManager.update_possibilities(self.player, self.selectedPiece.get_version())
             self.place_piece(m[1][0])
             self.graphics.gridGraphics.add_piece(self.selectedPiece.piece, self.selectedPiece.version + 1, m[1][0],self.player)
 
         if type == 2:
-            m = opti.alpha_beta(self.piecesPlayer, self.gridListener, HEURISTIQUE, self.player,self.player ,True, DEPTH)
+            m = opti.alpha_beta(self.piecesPlayer, self.gridManager, HEURISTIQUE, self.player, self.player, True, DEPTH)
             v = 0
             for e in m[1][2].keys():
                 if m[1][2][e] == m[1][1]:
@@ -234,7 +231,7 @@ class Game:#Objet qui gère la partie jouabilité du jeu (changement de joueur,v
                     break
             self.selectedPiece = self.get_graphic_piece_by_piece(m[1][2])
             self.selectedPiece.version = v-1
-            self.gridListener.update_possibilities(self.player, self.selectedPiece.get_version())
+            self.gridManager.update_possibilities(self.player, self.selectedPiece.get_version())
             self.place_piece(m[1][0])
             self.graphics.gridGraphics.add_piece(self.selectedPiece.piece, self.selectedPiece.version + 1, m[1][0],self.player)
         self.change_player()
@@ -284,15 +281,15 @@ class GraphicPiece:#Objet "pièce graphique",pièces bleues à droite pour chois
             self.game.selectedPiece = self
             self.bright()
             self.game.graphics.gridGraphics.clean_possibilities()
-            self.game.gridListener.update_possibilities(self.game.player,self.game.selectedPiece.get_version())
-            self.game.graphics.gridGraphics.show_possibilities(self.game.gridListener.possibilities[self.game.player])
+            self.game.gridManager.update_possibilities(self.game.player, self.game.selectedPiece.get_version())
+            self.game.graphics.gridGraphics.show_possibilities(self.game.gridManager.possibilities[self.game.player])
             for p in self.game.pieces:
                 if p != self and p.clickable[self.game.player]:p.dark()
     def show_possibilities(self,bot):#fonction qui affiche sur la grille les possibilités de placement
-        self.game.gridListener.update_possibilities(self.game.player, self.game.selectedPiece.get_version())
+        self.game.gridManager.update_possibilities(self.game.player, self.game.selectedPiece.get_version())
         if not bot:
             try:
-                for p in self.game.gridListener.possibilities[self.game.player]:
+                for p in self.game.gridManager.possibilities[self.game.player]:
                     self.game.graphics.gridGraphics.dark_border_case(p)
             except AttributeError:pass
 
@@ -333,8 +330,8 @@ class GraphicPiece:#Objet "pièce graphique",pièces bleues à droite pour chois
                                                         """)
                     self.rects[index] = (self.rects[index][0],False)
         self.game.graphics.gridGraphics.clean_possibilities()
-        self.game.gridListener.update_possibilities(self.game.player, self.game.selectedPiece.get_version())
-        self.game.graphics.gridGraphics.show_possibilities(self.game.gridListener.possibilities[self.game.player])
+        self.game.gridManager.update_possibilities(self.game.player, self.game.selectedPiece.get_version())
+        self.game.graphics.gridGraphics.show_possibilities(self.game.gridManager.possibilities[self.game.player])
 
     def set_visible(self,visible):
         if not visible:
